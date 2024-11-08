@@ -78,8 +78,11 @@ class Console
     protected function buyJuice(): void
     {
         try {
-            $this->vendorMachine->buy('juice');
-            echo "Here's your juice, thank you";
+            $sale = $this->vendorMachine->buy('juice');
+            echo sprintf("Here's your %s, thank you\n", $sale->item);
+            if (count($sale->change) > 0) {
+                echo sprintf("Here's your change: %s\n", implode(', ', array_map(fn(Coin $coin) => $coin->value, $sale->change)));
+            }
         } catch (\Throwable $th) {
             echo $th->getMessage();
         }

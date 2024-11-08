@@ -108,6 +108,7 @@ class VendorMachineTest extends TestCase
       '1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter()]],
       '1 quarter, 1 ten' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten()]],
       '1 quarter, 1 ten, 1 nickel' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()]],
+      '1 ten' => [[Coin::oneEuro(), Coin::nickel(), Coin::nickel()]],
     ];
   }
 }
