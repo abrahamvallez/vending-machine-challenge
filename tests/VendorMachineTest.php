@@ -16,37 +16,44 @@ class VendorMachineTest extends TestCase
     $this->vendorMachine = new VendorMachine();
   }
 
-  // @group accept coins //
-  public function testAcceptCoinOf1Euro(): void
+  /** @group accept_coins */
+
+  /** @dataProvider acceptCoinProvider */
+  public function testAcceptCoins(float $coin): void
   {
-    $this->vendorMachine->insertCoin(1);
-    $this->assertEquals(1, $this->vendorMachine->getMoneyInserted());
+    $this->vendorMachine->insertCoin($coin);
+    $this->assertEquals($coin, $this->vendorMachine->getMoneyInserted());
   }
 
-  public function testAcceptCoinsOf25cents(): void
+  public static function acceptCoinProvider(): array
   {
-    $this->vendorMachine->insertCoin(0.25);
-    $this->assertEquals(0.25, $this->vendorMachine->getMoneyInserted());
+    return [
+      '1 euro' => [1],
+      '0.25 euro' => [0.25],
+      '0.10 euro' => [0.10],
+      '0.05 euro' => [0.05],
+    ];
   }
 
-  // @group buy items //
+  /** @group buy_items */
 
-  public function testGetJuiceWhenBuyExactly(): void
+  /** @dataProvider buyJuiceProvider */
+  public function testGetJuiceWhenBuyExactly(array $coins): void
   {
-    $this->vendorMachine->insertCoin(1);
+    foreach ($coins as $coin) {
+      $this->vendorMachine->insertCoin($coin);
+    }
     $this->assertTrue($this->vendorMachine->buy('Juice'));
   }
 
-  public function testGet1JuiceWhenBuyExactlyWith25cents(): void
+  public static function buyJuiceProvider(): array
   {
-    $this->vendorMachine->insertCoin(0.25);
-    $this->vendorMachine->insertCoin(0.25);
-    $this->vendorMachine->insertCoin(0.25);
-    $this->vendorMachine->insertCoin(0.25);
-
-    $this->assertTrue($this->vendorMachine->buy('Juice'));
+    return [
+      '1 euro' => [[1]],
+      '0.25 cents' => [array_fill(0, 4, 0.25)],
+      '0.05 cents' => [array_fill(0, 20, 0.05)],
+    ];
   }
-
 
   public function testAJuiceIsRemovedFromInventaryWhenIsSold(): void
   {

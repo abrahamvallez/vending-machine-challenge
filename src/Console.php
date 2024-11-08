@@ -2,18 +2,24 @@
 
 namespace App\Ui;
 
+use App\Domain\VendorMachine;
+
 class Console
 {
     private bool $running = true;
     private array $commands = [];
+    private VendorMachine $vendorMachine;
 
     public function __construct()
     {
+        $this->vendorMachine = new VendorMachine();
         $this->commands = [
-            'help' => 'Muestra la lista de comandos disponibles',
-            'exit' => 'Termina la aplicación',
-            'juice' => 'Muestra la hora actual',
-            'clear' => 'Limpia la pantalla',
+            'help' => 'Shows the list of available commands',
+            '1' => 'Insert one euro',
+            '0.25' => 'Insert 25 euro cents',
+            'exit' => 'Exit application',
+            'juice' => 'Buy a juice',
+            'clear' => 'Clear screen',
         ];
     }
 
@@ -41,8 +47,15 @@ class Console
                 echo "¡Bye!\n";
                 break;
 
+            case '1':
+                $this->vendorMachine->insertCoin(1);
+                break;
+            case '0.25':
+                $this->vendorMachine->insertCoin(0.25);
+                break;
+
             case 'juice':
-                system('clear');
+                $this->vendorMachine->buy('juice');
                 break;
             default:
                 echo "Command not supported. Type 'help' to see available commands.\n";

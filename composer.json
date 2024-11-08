@@ -25,6 +25,6 @@
             "@lint",
             "php-cs-fixer fix --dry-run --diff"
         ],
-        "test": "phpunit"
+        "test": "phpunit --display-notices --display-warnings --display-skipped --display-deprecations --display-errors --display-incomplete"
     }
 }
