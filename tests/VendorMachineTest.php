@@ -5,6 +5,7 @@ namespace App\Tests;
 use PHPUnit\Framework\TestCase;
 use App\Domain\VendorMachine;
 use App\Domain\NotEnoughMoneyException;
+use App\Domain\NotEnoughInventoryException;
 
 class VendorMachineTest extends TestCase
 {
@@ -34,6 +35,13 @@ class VendorMachineTest extends TestCase
   {
     $vendorMachine = new VendorMachine();
     $this->expectException(NotEnoughMoneyException::class);
+    $vendorMachine->buy('Juice');
+  }
+
+  public function testShouldNotSellIfNotEnoughInventory(): void
+  {
+    $vendorMachine = new VendorMachine();
+    $this->expectException(NotEnoughInventoryException::class);
     $vendorMachine->buy('Juice');
   }
 }
