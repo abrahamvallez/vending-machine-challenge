@@ -21,15 +21,6 @@ class VendorMachine
     $this->coinInventory[$coin->value]++;
   }
 
-  public function getCoinInventory(): array
-  {
-    return $this->coinInventory;
-  }
-
-  public function getMoneyInserted(): float
-  {
-    return $this->moneyInserted;
-  }
   public function getInventory(): int
   {
     return $this->inventory;
