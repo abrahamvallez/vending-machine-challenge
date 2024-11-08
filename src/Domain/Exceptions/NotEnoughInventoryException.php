@@ -1,5 +1,5 @@
 <?php
 
-namespace App\Domain;
+namespace App\Domain\Exceptions;
 
 class NotEnoughInventoryException extends \Exception {}

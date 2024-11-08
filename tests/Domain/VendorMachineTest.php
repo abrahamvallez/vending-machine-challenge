@@ -6,10 +6,11 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use App\Domain\VendorMachine;
-use App\Domain\NotEnoughMoneyException;
-use App\Domain\NotEnoughInventoryException;
+use App\Domain\Exceptions\NotEnoughMoneyException;
+use App\Domain\Exceptions\NotEnoughInventoryException;
 use App\Domain\Coin;
 use App\Domain\Sale;
+use App\Domain\Exceptions\NotEnoughChangeException;
 
 class VendorMachineTest extends TestCase
 {
@@ -18,6 +19,13 @@ class VendorMachineTest extends TestCase
   protected function setUp(): void
   {
     $this->vendorMachine = new VendorMachine();
+  }
+
+  private function insertCoinsToVendorMachine(array $coins): void
+  {
+    foreach ($coins as $coin) {
+      $this->vendorMachine->insertCoin($coin);
+    }
   }
 
   #[Group('buy_items')]
@@ -41,12 +49,8 @@ class VendorMachineTest extends TestCase
   #[DataProvider('notEnoughMoneyProvider')]
   public function testNotSellIfNotEnoughMoney(array $coins): void
   {
-    foreach ($coins as $coin) {
-      $this->vendorMachine->insertCoin($coin);
-    }
-
+    $this->insertCoinsToVendorMachine($coins);
     $this->expectException(NotEnoughMoneyException::class);
-
     $this->vendorMachine->buy('Juice');
   }
 
@@ -75,9 +79,7 @@ class VendorMachineTest extends TestCase
   public function testGetJuiceAndNoChangeWhenBuyWithExactMoney(array $coins): void
   {
     $expectedSale = new Sale([], 'Juice');
-    foreach ($coins as $coin) {
-      $this->vendorMachine->insertCoin($coin);
-    }
+    $this->insertCoinsToVendorMachine($coins);
     $this->assertEquals($expectedSale, $this->vendorMachine->buy('Juice'));
   }
 
@@ -99,10 +101,9 @@ class VendorMachineTest extends TestCase
   #[DataProvider('changeWhenBuyWithMoreMoneyProvider')]
   public function testReturnCorrectValueChangeWhenBuyWithMoreMoney(array $coins): void
   {
-    foreach ($coins as $coin) {
-      $this->vendorMachine->insertCoin($coin);
-    }
-    $expectedChangeMoneyValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $coins)) - 100;
+    $this->insertCoinsToVendorMachine($coins);
+    $insertedValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $coins));
+    $expectedChangeMoneyValue = $insertedValue - 100;
 
     $return = $this->vendorMachine->buy('Juice');
     $changeValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $return->change));
@@ -118,5 +119,12 @@ class VendorMachineTest extends TestCase
       '1 quarter, 1 ten, 1 nickel' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()]],
       '1 ten' => [[Coin::oneEuro(), Coin::nickel(), Coin::nickel()]],
     ];
+  }
+
+  public function testThrowExceptionAndNotSellWhenNoChangeAvailable(): void
+  {
+    $this->expectException(NotEnoughChangeException::class);
+    $this->insertCoinsToVendorMachine([Coin::quarter(), ...array_fill(0, 8, Coin::ten())]);
+    $this->vendorMachine->buy('Juice');
   }
 }

@@ -1,5 +1,5 @@
 <?php
 
-namespace App\Domain;
+namespace App\Domain\Exceptions;
 
 class NotEnoughMoneyException extends \Exception {}
