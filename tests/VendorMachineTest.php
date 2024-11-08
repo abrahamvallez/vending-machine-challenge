@@ -12,7 +12,8 @@ class VendorMachineTest extends TestCase
   public function testAcceptCoinOf1Euro(): void
   {
     $vendorMachine = new VendorMachine();
-    $this->assertTrue($vendorMachine->insertCoin(1));
+    $vendorMachine->insertCoin(1);
+    $this->assertEquals(1, $vendorMachine->getMoneyInserted());
   }
 
   public function testGetJuiceWhenBuyExactly(): void
@@ -31,17 +32,26 @@ class VendorMachineTest extends TestCase
     $this->assertEquals(0, $vendorMachine->getInventory());
   }
 
-  public function testShouldNotSellIfNotEnoughMoney(): void
+  public function testNotSellIfNotEnoughMoney(): void
   {
     $vendorMachine = new VendorMachine();
     $this->expectException(NotEnoughMoneyException::class);
     $vendorMachine->buy('Juice');
   }
 
-  public function testShouldNotSellIfNotEnoughInventory(): void
+  public function testNotSellIfNotEnoughInventory(): void
   {
     $vendorMachine = new VendorMachine();
+    $vendorMachine->insertCoin(1);
+    $vendorMachine->buy('Juice');
     $this->expectException(NotEnoughInventoryException::class);
     $vendorMachine->buy('Juice');
+  }
+
+  public function testAcceptCoinsOf25cents(): void
+  {
+    $vendorMachine = new VendorMachine();
+    $vendorMachine->insertCoin(0.25);
+    $this->assertEquals(0.25, $vendorMachine->getMoneyInserted());
   }
 }

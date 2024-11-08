@@ -7,13 +7,21 @@ namespace App\Domain;
 class VendorMachine
 {
   private int $inventory = 1;
-  private int $moneyInserted = 0;
+  private float $moneyInserted = 0;
 
 
-  public function insertCoin(int $coin): bool
+  public function insertCoin(float $coin): void
   {
     $this->moneyInserted += $coin;
-    return $coin === 1;
+  }
+
+  public function getMoneyInserted(): float
+  {
+    return $this->moneyInserted;
+  }
+  public function getInventory(): int
+  {
+    return $this->inventory;
   }
 
   public function buy(string $item): int
@@ -21,12 +29,10 @@ class VendorMachine
     if ($this->moneyInserted < 1) {
       throw new NotEnoughMoneyException();
     }
+    if ($this->inventory === 0) {
+      throw new NotEnoughInventoryException();
+    }
     $this->inventory--;
     return 1;
-  }
-
-  public function getInventory(): int
-  {
-    return $this->inventory;
   }
 }
