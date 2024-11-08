@@ -24,7 +24,7 @@ class VendorMachine
     return $this->inventory;
   }
 
-  public function buy(string $item): int
+  public function buy(string $item): bool
   {
     if ($this->moneyInserted < 1) {
       throw new NotEnoughMoneyException();
@@ -33,6 +33,6 @@ class VendorMachine
       throw new NotEnoughInventoryException();
     }
     $this->inventory--;
-    return 1;
+    return true;
   }
 }

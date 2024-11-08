@@ -9,6 +9,7 @@ use App\Domain\NotEnoughInventoryException;
 
 class VendorMachineTest extends TestCase
 {
+  // @group accept coins //
   public function testAcceptCoinOf1Euro(): void
   {
     $vendorMachine = new VendorMachine();
@@ -16,12 +17,33 @@ class VendorMachineTest extends TestCase
     $this->assertEquals(1, $vendorMachine->getMoneyInserted());
   }
 
+  public function testAcceptCoinsOf25cents(): void
+  {
+    $vendorMachine = new VendorMachine();
+    $vendorMachine->insertCoin(0.25);
+    $this->assertEquals(0.25, $vendorMachine->getMoneyInserted());
+  }
+
+  // @group buy items //
+
   public function testGetJuiceWhenBuyExactly(): void
   {
     $vendorMachine = new VendorMachine();
     $vendorMachine->insertCoin(1);
-    $this->assertEquals(1, $vendorMachine->buy('Juice'));
+    $this->assertTrue($vendorMachine->buy('Juice'));
   }
+
+  public function testGet1JuiceWhenBuyExactlyWith25cents(): void
+  {
+    $vendorMachine = new VendorMachine();
+    $vendorMachine->insertCoin(0.25);
+    $vendorMachine->insertCoin(0.25);
+    $vendorMachine->insertCoin(0.25);
+    $vendorMachine->insertCoin(0.25);
+
+    $this->assertTrue($vendorMachine->buy('Juice'));
+  }
+
 
   public function testAJuiceIsRemovedFromInventaryWhenIsSold(): void
   {
@@ -46,12 +68,5 @@ class VendorMachineTest extends TestCase
     $vendorMachine->buy('Juice');
     $this->expectException(NotEnoughInventoryException::class);
     $vendorMachine->buy('Juice');
-  }
-
-  public function testAcceptCoinsOf25cents(): void
-  {
-    $vendorMachine = new VendorMachine();
-    $vendorMachine->insertCoin(0.25);
-    $this->assertEquals(0.25, $vendorMachine->getMoneyInserted());
   }
 }
