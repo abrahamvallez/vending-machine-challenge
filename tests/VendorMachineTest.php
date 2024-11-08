@@ -3,7 +3,8 @@
 namespace App\Tests;
 
 use PHPUnit\Framework\TestCase;
-use App\VendorMachine;
+use App\Domain\VendorMachine;
+use App\Domain\NotEnoughMoneyException;
 
 class VendorMachineTest extends TestCase
 {
@@ -23,9 +24,16 @@ class VendorMachineTest extends TestCase
   public function testAJuiceIsRemovedFromInventaryWhenIsSold(): void
   {
     $vendorMachine = new VendorMachine();
-    $this->assertCount(1, $vendorMachine->getInventory());
+    $this->assertEquals(1, $vendorMachine->getInventory());
     $vendorMachine->insertCoin(1);
     $vendorMachine->buy('Juice');
-    $this->assertCount(0, $vendorMachine->getInventory());
+    $this->assertEquals(0, $vendorMachine->getInventory());
+  }
+
+  public function testShouldNotSellIfNotEnoughMoney(): void
+  {
+    $vendorMachine = new VendorMachine();
+    $this->expectException(NotEnoughMoneyException::class);
+    $vendorMachine->buy('Juice');
   }
 }
