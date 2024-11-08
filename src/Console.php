@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Domain\VendorMachine;
+use App\Domain\Coin;
 
 class Console
 {
@@ -44,16 +45,20 @@ class Console
 
             case 'exit':
                 $this->running = false;
-                echo "¡Bye!\n";
+                echo "See you later, alligator!\n";
                 break;
-
             case '1':
-                $this->vendorMachine->insertCoin(1);
+                $this->vendorMachine->insertCoin(Coin::oneEuro());
                 break;
             case '0.25':
-                $this->vendorMachine->insertCoin(0.25);
+                $this->vendorMachine->insertCoin(Coin::quarter());
                 break;
-
+            case '0.10':
+                $this->vendorMachine->insertCoin(Coin::ten());
+                break;
+            case '0.05':
+                $this->vendorMachine->insertCoin(Coin::nickel());
+                break;
             case 'juice':
                 $this->buyJuice();
                 break;
