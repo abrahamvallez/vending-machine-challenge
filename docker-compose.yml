@@ -1,0 +1,11 @@
+services:
+  php:
+    build: .
+    volumes:
+      - ./src:/app/src
+      - ./composer.json:/app/composer.json
+      - ./composer.lock:/app/composer.lock
+      - ./.php-cs-fixer.php:/app/.php-cs-fixer.php
+      - ./phpcs.xml:/app/phpcs.xml
+    tty: true
+    stdin_open: true

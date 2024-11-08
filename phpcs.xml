@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="PHP Console App Standard">
+    <description>PSR12 Coding Standards</description>
+
+    <!-- Archivos a analizar -->
+    <file>src</file>
+
+    <!-- Usar el estándar PSR12 -->
+    <rule ref="PSR12"/>
+
+    <!-- Excluir directorios -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>tests/*</exclude-pattern>
+
+    <!-- Mostrar progreso -->
+    <arg value="p"/>
+    <arg name="colors"/>
+</ruleset> 
