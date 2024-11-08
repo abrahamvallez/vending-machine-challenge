@@ -26,15 +26,36 @@ class VendorMachine
     return $this->inventory;
   }
 
-  public function buy(string $item): bool
+  public function buy(string $item): Sale
   {
-    if ($this->moneyInserted < Coin::fromValueOnCents(100)->value) {
-      throw new NotEnoughMoneyException('Not enough money inserted');
-    }
+    $change = [];
     if ($this->inventory === 0) {
       throw new NotEnoughInventoryException('Not enough inventory');
     }
+    if ($this->moneyInserted < Coin::fromValueOnCents(100)->value) {
+      throw new NotEnoughMoneyException('Not enough money inserted');
+    }
+    if ($this->moneyInserted > Coin::fromValueOnCents(100)->value) {
+      $change = $this->calculateChange($this->moneyInserted, 100);
+    }
     $this->inventory--;
-    return true;
+    return new Sale($change, $item);
+  }
+
+  private function calculateChange(int $moneyInserted, int $itemPrice): array
+  {
+    $change = [];
+    $remainingChange = $moneyInserted - $itemPrice;
+
+    $coinValues = [100, 25, 10, 5];
+
+    foreach ($coinValues as $value) {
+      while ($remainingChange >= $value) {
+        $change[] = Coin::fromValueOnCents($value);
+        $remainingChange -= $value;
+      }
+    }
+
+    return $change;
   }
 }

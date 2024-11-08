@@ -9,6 +9,7 @@ use App\Domain\VendorMachine;
 use App\Domain\NotEnoughMoneyException;
 use App\Domain\NotEnoughInventoryException;
 use App\Domain\Coin;
+use App\Domain\Sale;
 
 class VendorMachineTest extends TestCase
 {
@@ -23,10 +24,11 @@ class VendorMachineTest extends TestCase
   #[DataProvider('buyJuiceProvider')]
   public function testGetJuiceWhenBuyExactly(array $coins): void
   {
+    $expectedSale = new Sale([], 'Juice');
     foreach ($coins as $coin) {
       $this->vendorMachine->insertCoin($coin);
     }
-    $this->assertTrue($this->vendorMachine->buy('Juice'));
+    $this->assertEquals($expectedSale, $this->vendorMachine->buy('Juice'));
   }
 
   #[Group('buy_items')]
@@ -37,9 +39,9 @@ class VendorMachineTest extends TestCase
       '0.25 cents' => [array_fill(0, 4, Coin::quarter())],
       '0.10 cents' => [array_fill(0, 10, Coin::ten())],
       '0.05 cents' => [array_fill(0, 20, Coin::nickel())],
-      '1 euro, 1 quarter, 1 ten and 1 nickel' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()]],
-      '1 euro, 1 quarter, 1 ten, 1 nickel and 1 euro' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel(), Coin::oneEuro()]],
-      '1 euro, 1 quarter, 1 ten, 1 euro, 1 euro' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel(), Coin::oneEuro(), Coin::oneEuro()]],
+      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 nickel, 1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::nickel(), Coin::quarter()]],
+      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 ten, 1 ten, 1 ten' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten()]],
+      '1 nickel, 1 quarter, 1 nickel, 1 nickel, 1 ten, 1 quarter, 1 quarter' => [[Coin::nickel(), Coin::quarter(), Coin::nickel(), Coin::nickel(), Coin::ten(), Coin::quarter(), Coin::quarter()]],
     ];
   }
 
@@ -83,5 +85,29 @@ class VendorMachineTest extends TestCase
     $this->vendorMachine->buy('Juice');
     $this->expectException(NotEnoughInventoryException::class, 'Not enough inventory');
     $this->vendorMachine->buy('Juice');
+  }
+
+  #[Group('returning_change')]
+  #[DataProvider('changeWhenBuyWithMoreMoneyProvider')]
+  public function testReturnCorrectValueWhenBuyWithMoreMoney(array $coins): void
+  {
+    foreach ($coins as $coin) {
+      $this->vendorMachine->insertCoin($coin);
+    }
+    $expectedChangeMoneyValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $coins)) - 100;
+
+    $return = $this->vendorMachine->buy('Juice');
+    $changeValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $return->change));
+    $this->assertEquals($expectedChangeMoneyValue, $changeValue);
+  }
+
+  public static function changeWhenBuyWithMoreMoneyProvider(): array
+  {
+    return [
+      '1 quarter' => [[Coin::oneEuro(), Coin::quarter()]],
+      '1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter()]],
+      '1 quarter, 1 ten' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten()]],
+      '1 quarter, 1 ten, 1 nickel' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()]],
+    ];
   }
 }
