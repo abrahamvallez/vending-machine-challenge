@@ -9,10 +9,13 @@ use App\Domain\Exceptions\NotEnoughMoneyException;
 
 class VendorMachine
 {
-  private int $inventory = 1;
   private int $moneyInserted = 0;
 
-  public function __construct(private CoinInventory $coinInventory) {}
+  public function __construct(private CoinInventory $coinInventory = new CoinInventory(), private array $itemsInventory = [
+    SupportedItems::JUICE->name => 5,
+    SupportedItems::SODA->name => 5,
+    SupportedItems::WATER->name => 5,
+  ]) {}
 
   public function insertCoin(Coin $coin): void
   {
@@ -20,15 +23,15 @@ class VendorMachine
     $this->coinInventory->addCoin($coin);
   }
 
-  public function getInventory(): int
+  public function getInventory(): array
   {
-    return $this->inventory;
+    return $this->itemsInventory;
   }
 
   public function buy(string $item): Sale
   {
     $change = [];
-    if ($this->inventory === 0) {
+    if ($this->itemsInventory[$item] === 0) {
       throw new NotEnoughInventoryException('Not enough inventory');
     }
     if ($this->moneyInserted < Coin::fromValueOnCents(100)->value) {
@@ -37,7 +40,7 @@ class VendorMachine
     if ($this->moneyInserted > Coin::fromValueOnCents(100)->value) {
       $change = $this->coinInventory->getCoinsForChange($this->moneyInserted, 100);
     }
-    $this->inventory--;
+    $this->itemsInventory[$item]--;
     return new Sale($change, $item);
   }
 }

@@ -6,6 +6,7 @@ use App\Domain\VendorMachine;
 use App\Domain\Coin;
 use App\Domain\CoinInventory;
 use App\Domain\SupportedCoins;
+use App\Domain\SupportedItems;
 
 class Console
 {
@@ -22,7 +23,7 @@ class Console
             '1' => 'Insert one euro',
             '0.25' => 'Insert 25 euro cents',
             'exit' => 'Exit application',
-            'juice' => 'Buy a juice',
+            SupportedItems::JUICE->name => 'Buy a juice',
             'clear' => 'Clear screen',
         ];
     }
@@ -62,7 +63,7 @@ class Console
             case '0.05':
                 $this->vendorMachine->insertCoin(Coin::nickel());
                 break;
-            case 'juice':
+            case SupportedItems::JUICE->name:
                 $this->buyJuice();
                 break;
             default:
@@ -81,7 +82,7 @@ class Console
     protected function buyJuice(): void
     {
         try {
-            $sale = $this->vendorMachine->buy('juice');
+            $sale = $this->vendorMachine->buy(SupportedItems::JUICE->name);
             echo sprintf("Here's your %s, thank you\n", $sale->item);
             if (count($sale->change) > 0) {
                 echo sprintf("Here's your change: %s\n", implode(', ', array_map(fn(Coin $coin) => $coin->value, $sale->change)));
