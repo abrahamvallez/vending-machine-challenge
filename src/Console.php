@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Ui;
+namespace App;
 
 use App\Domain\VendorMachine;
 
@@ -55,18 +55,28 @@ class Console
                 break;
 
             case 'juice':
-                $this->vendorMachine->buy('juice');
+                $this->buyJuice();
                 break;
             default:
                 echo "Command not supported. Type 'help' to see available commands.\n";
         }
     }
 
-    private function showHelp(): void
+    protected function showHelp(): void
     {
         echo "\nAvailable commands:\n";
         foreach ($this->commands as $command => $description) {
             echo sprintf("  %-10s : %s\n", $command, $description);
+        }
+    }
+
+    protected function buyJuice(): void
+    {
+        try {
+            $this->vendorMachine->buy('juice');
+            echo "Here's your juice, thank you";
+        } catch (\Throwable $th) {
+            echo $th->getMessage();
         }
     }
 }

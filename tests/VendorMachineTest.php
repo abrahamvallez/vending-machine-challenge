@@ -69,7 +69,7 @@ class VendorMachineTest extends TestCase
     foreach ($coins as $coin) {
       $this->vendorMachine->insertCoin($coin);
     }
-    $this->expectException(NotEnoughMoneyException::class);
+    $this->expectException(NotEnoughMoneyException::class, 'Not enough money inserted');
     $this->vendorMachine->buy('Juice');
   }
 
@@ -86,7 +86,7 @@ class VendorMachineTest extends TestCase
   {
     $this->vendorMachine->insertCoin(1);
     $this->vendorMachine->buy('Juice');
-    $this->expectException(NotEnoughInventoryException::class);
+    $this->expectException(NotEnoughInventoryException::class, 'Not enough inventory');
     $this->vendorMachine->buy('Juice');
   }
 }
