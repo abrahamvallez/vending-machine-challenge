@@ -21,28 +21,11 @@ class VendorMachineTest extends TestCase
   }
 
   #[Group('buy_items')]
-  #[DataProvider('buyJuiceProvider')]
-  public function testGetJuiceWhenBuyExactly(array $coins): void
+  public function testReturnItemWhenBuy(): void
   {
-    $expectedSale = new Sale([], 'Juice');
-    foreach ($coins as $coin) {
-      $this->vendorMachine->insertCoin($coin);
-    }
-    $this->assertEquals($expectedSale, $this->vendorMachine->buy('Juice'));
-  }
-
-  #[Group('buy_items')]
-  public static function buyJuiceProvider(): array
-  {
-    return [
-      '1 euro' => [[Coin::oneEuro()]],
-      '0.25 cents' => [array_fill(0, 4, Coin::quarter())],
-      '0.10 cents' => [array_fill(0, 10, Coin::ten())],
-      '0.05 cents' => [array_fill(0, 20, Coin::nickel())],
-      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 nickel, 1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::nickel(), Coin::quarter()]],
-      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 ten, 1 ten, 1 ten' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten()]],
-      '1 nickel, 1 quarter, 1 nickel, 1 nickel, 1 ten, 1 quarter, 1 quarter' => [[Coin::nickel(), Coin::quarter(), Coin::nickel(), Coin::nickel(), Coin::ten(), Coin::quarter(), Coin::quarter()]],
-    ];
+    $this->vendorMachine->insertCoin(Coin::oneEuro());
+    $sale = $this->vendorMachine->buy('Juice');
+    $this->assertEquals('Juice', $sale->item);
   }
 
   #[Group('buy_items')]
@@ -88,8 +71,33 @@ class VendorMachineTest extends TestCase
   }
 
   #[Group('returning_change')]
+  #[DataProvider('buyJuiceWithExactMoneyProvider')]
+  public function testGetJuiceAndNoChangeWhenBuyWithExactMoney(array $coins): void
+  {
+    $expectedSale = new Sale([], 'Juice');
+    foreach ($coins as $coin) {
+      $this->vendorMachine->insertCoin($coin);
+    }
+    $this->assertEquals($expectedSale, $this->vendorMachine->buy('Juice'));
+  }
+
+  #[Group('returning_change')]
+  public static function buyJuiceWithExactMoneyProvider(): array
+  {
+    return [
+      '1 euro' => [[Coin::oneEuro()]],
+      '0.25 cents' => [array_fill(0, 4, Coin::quarter())],
+      '0.10 cents' => [array_fill(0, 10, Coin::ten())],
+      '0.05 cents' => [array_fill(0, 20, Coin::nickel())],
+      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 nickel, 1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::nickel(), Coin::quarter()]],
+      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 ten, 1 ten, 1 ten' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten()]],
+      '1 nickel, 1 quarter, 1 nickel, 1 nickel, 1 ten, 1 quarter, 1 quarter' => [[Coin::nickel(), Coin::quarter(), Coin::nickel(), Coin::nickel(), Coin::ten(), Coin::quarter(), Coin::quarter()]],
+    ];
+  }
+
+  #[Group('returning_change')]
   #[DataProvider('changeWhenBuyWithMoreMoneyProvider')]
-  public function testReturnCorrectValueWhenBuyWithMoreMoney(array $coins): void
+  public function testReturnCorrectValueChangeWhenBuyWithMoreMoney(array $coins): void
   {
     foreach ($coins as $coin) {
       $this->vendorMachine->insertCoin($coin);
