@@ -2,15 +2,9 @@
 
 namespace App\Tests;
 
-use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
-use App\Domain\VendorMachine;
-use App\Domain\Exceptions\NotEnoughMoneyException;
-use App\Domain\Exceptions\NotEnoughInventoryException;
-use App\Domain\Coin;
-use App\Domain\Sale;
-use App\Domain\Exceptions\NotEnoughChangeException;
+use PHPUnit\Framework\{Attributes\Group, Attributes\DataProvider, TestCase};
+use App\Domain\{VendorMachine, Coin, Sale, CoinInventory};
+use App\Domain\Exceptions\{NotEnoughMoneyException, NotEnoughInventoryException, NotEnoughChangeException};
 
 class VendorMachineTest extends TestCase
 {
@@ -18,7 +12,7 @@ class VendorMachineTest extends TestCase
 
   protected function setUp(): void
   {
-    $this->vendorMachine = new VendorMachine();
+    $this->vendorMachine = new VendorMachine(new CoinInventory());
   }
 
   private function insertCoinsToVendorMachine(array $coins): void

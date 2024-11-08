@@ -4,6 +4,8 @@ namespace App;
 
 use App\Domain\VendorMachine;
 use App\Domain\Coin;
+use App\Domain\CoinInventory;
+use App\Domain\SupportedCoins;
 
 class Console
 {
@@ -13,7 +15,8 @@ class Console
 
     public function __construct()
     {
-        $this->vendorMachine = new VendorMachine();
+        $coinInventory = array_fill_keys(array_map(fn(SupportedCoins $coin) => $coin->value, SupportedCoins::cases()), 5);
+        $this->vendorMachine = new VendorMachine(new CoinInventory($coinInventory));
         $this->commands = [
             'help' => 'Shows the list of available commands',
             '1' => 'Insert one euro',
