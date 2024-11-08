@@ -45,6 +45,52 @@ class VendorMachineTest extends TestCase
     ];
   }
 
+  #[Group('accept_coins')]
+  #[DataProvider('mixedCoinsProvider')]
+  public function testInsertMoneySaveOnInventory(array $coins, array $expectedInventory): void
+  {
+    foreach ($coins as $coin) {
+      $this->vendorMachine->insertCoin($coin);
+    }
+    $this->assertEquals($expectedInventory, $this->vendorMachine->getCoinInventory());
+  }
+
+  public static function mixedCoinsProvider(): array
+  {
+    return [
+      '1 euro and 1 quarter' => [[Coin::oneEuro(), Coin::quarter()], [
+        Coin::oneEuro()->value => 1,
+        Coin::quarter()->value => 1,
+        Coin::ten()->value => 0,
+        Coin::nickel()->value => 0,
+      ]],
+      '1 euro, 1 quarter, 1 ten and 1 nickel' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()], [
+        Coin::oneEuro()->value => 1,
+        Coin::quarter()->value => 1,
+        Coin::ten()->value => 1,
+        Coin::nickel()->value => 1,
+      ]],
+      '1 euro, 1 quarter, 1 ten, 1 nickel and 1 euro' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel(), Coin::oneEuro()], [
+        Coin::oneEuro()->value => 2,
+        Coin::quarter()->value => 1,
+        Coin::ten()->value => 1,
+        Coin::nickel()->value => 1,
+      ]],
+      '1 euro, 1 quarter, 1 ten, 1 euro, 1 euro' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel(), Coin::oneEuro(), Coin::oneEuro()], [
+        Coin::oneEuro()->value => 3,
+        Coin::quarter()->value => 1,
+        Coin::ten()->value => 1,
+        Coin::nickel()->value => 1,
+      ]],
+      '1 quarter, 1 quarter, 1 nickel' => [[Coin::quarter(), Coin::quarter(), Coin::nickel()], [
+        Coin::quarter()->value => 2,
+        Coin::nickel()->value => 1,
+        Coin::ten()->value => 0,
+        Coin::oneEuro()->value => 0,
+      ]],
+    ];
+  }
+
   #[Group('buy_items')]
   #[DataProvider('buyJuiceProvider')]
   public function testGetJuiceWhenBuyExactly(array $coins): void
