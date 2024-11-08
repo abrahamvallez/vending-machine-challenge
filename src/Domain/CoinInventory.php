@@ -6,6 +6,7 @@ namespace App\Domain;
 
 use App\Domain\Exceptions\NotEnoughChangeException;
 use InvalidArgumentException;
+use App\Domain\SupportedCoins;
 
 class CoinInventory
 {
@@ -13,8 +14,7 @@ class CoinInventory
 
   public function __construct(array $coinInventory = [])
   {
-    $supportedCoins = SupportedCoins::cases();
-    $this->quantities = array_fill_keys(array_map(fn($supportedCoin) => $supportedCoin->value, $supportedCoins), 0);
+    $this->quantities = array_fill_keys(array_map(fn($supportedCoin) => $supportedCoin->value, SupportedCoins::cases()), 0);
     foreach ($coinInventory as $coinValue => $quantity) {
       if (!array_key_exists($coinValue, $this->quantities)) {
         throw new InvalidArgumentException('Coin not supported: ' . $coinValue);
@@ -30,21 +30,23 @@ class CoinInventory
 
   public function addCoin(Coin $coin): void
   {
-    if (!array_key_exists($coin->value, $this->quantities)) {
+    if (!SupportedCoins::isSupported($coin)) {
       throw new InvalidArgumentException('Coin not supported: ' . $coin->value);
     }
-
     $this->quantities[$coin->value]++;
   }
 
   public function getCoinsForChange(int $moneyInserted, int $itemPrice): array
   {
-    $change = [];
     $remainingChange = $moneyInserted - $itemPrice;
     if ($remainingChange < 0) return [];
+    return $this->calculateChange($remainingChange);
+  }
 
-    $coins = SupportedCoins::cases();
-    foreach ($coins as $coin) {
+  private function calculateChange(int &$remainingChange): array
+  {
+    $change = [];
+    foreach (SupportedCoins::cases() as $coin) {
       while ($remainingChange >= $coin->value && $this->quantities[$coin->value] > 0) {
         $remainingChange -= $coin->value;
         $change[] = Coin::fromValueOnCents($coin->value);
@@ -54,15 +56,6 @@ class CoinInventory
     if ($remainingChange > 0) {
       throw new NotEnoughChangeException();
     }
-
     return $change;
   }
-}
-
-enum SupportedCoins: int
-{
-  case ONE_EURO = 100;
-  case QUARTER = 25;
-  case TEN = 10;
-  case NICKEL = 5;
 }
