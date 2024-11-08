@@ -2,6 +2,8 @@
 
 namespace App\Tests;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use App\Domain\VendorMachine;
 use App\Domain\NotEnoughMoneyException;
@@ -17,9 +19,8 @@ class VendorMachineTest extends TestCase
     $this->vendorMachine = new VendorMachine();
   }
 
-  /** @group accept_coins */
-
-  /** @dataProvider acceptCoinProvider */
+  #[Group('accept_coins')]
+  #[DataProvider('acceptCoinProvider')]
   public function testAcceptCoins(Coin $coin): void
   {
     $coinInventoryDefault = [
@@ -33,6 +34,7 @@ class VendorMachineTest extends TestCase
     $this->assertEquals([$coin->value => 1] + $coinInventoryDefault, $this->vendorMachine->getCoinInventory());
   }
 
+  #[Group('accept_coins')]
   public static function acceptCoinProvider(): array
   {
     return [
@@ -43,9 +45,8 @@ class VendorMachineTest extends TestCase
     ];
   }
 
-  /** @group buy_items */
-
-  /** @dataProvider buyJuiceProvider */
+  #[Group('buy_items')]
+  #[DataProvider('buyJuiceProvider')]
   public function testGetJuiceWhenBuyExactly(array $coins): void
   {
     foreach ($coins as $coin) {
@@ -54,6 +55,7 @@ class VendorMachineTest extends TestCase
     $this->assertTrue($this->vendorMachine->buy('Juice'));
   }
 
+  #[Group('buy_items')]
   public static function buyJuiceProvider(): array
   {
     return [
@@ -64,6 +66,7 @@ class VendorMachineTest extends TestCase
     ];
   }
 
+  #[Group('buy_items')]
   public function testAJuiceIsRemovedFromInventaryWhenIsSold(): void
   {
     $this->assertEquals(1, $this->vendorMachine->getInventory());
@@ -72,13 +75,16 @@ class VendorMachineTest extends TestCase
     $this->assertEquals(0, $this->vendorMachine->getInventory());
   }
 
-  /**  @dataProvider notEnoughMoneyProvider */
+  #[Group('buy_items')]
+  #[DataProvider('notEnoughMoneyProvider')]
   public function testNotSellIfNotEnoughMoney(array $coins): void
   {
     foreach ($coins as $coin) {
       $this->vendorMachine->insertCoin($coin);
     }
-    $this->expectException(NotEnoughMoneyException::class, 'Not enough money inserted');
+
+    $this->expectException(NotEnoughMoneyException::class);
+
     $this->vendorMachine->buy('Juice');
   }
 
@@ -87,10 +93,13 @@ class VendorMachineTest extends TestCase
     return [
       'no money inserted' => [[]],
       '25 cents inserted' => [[Coin::quarter()]],
-      '75 cents inserted on 25 cents' => [[Coin::quarter(), Coin::quarter(), Coin::quarter()]],
+      '75 cents inserted' => [
+        [Coin::quarter(), Coin::quarter(), Coin::quarter()]
+      ],
     ];
   }
 
+  #[Group('buy_items')]
   public function testNotSellIfNotEnoughInventory(): void
   {
     $this->vendorMachine->insertCoin(Coin::oneEuro());
