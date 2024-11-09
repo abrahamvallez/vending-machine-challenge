@@ -8,6 +8,7 @@ use App\Domain\Exceptions\NotEnoughInventoryException;
 use App\Domain\Exceptions\NotEnoughMoneyException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestStatus\Success;
+use App\SupportedItems;
 
 class VendorMachine
 {

@@ -5,7 +5,7 @@ namespace App\Tests;
 use PHPUnit\Framework\{Attributes\Group, Attributes\DataProvider, TestCase};
 use App\Domain\{VendorMachine, Coin, Sale, CoinInventory};
 use App\Domain\Exceptions\{NotEnoughMoneyException, NotEnoughInventoryException, NotEnoughChangeException};
-use App\Domain\SupportedItems;
+use App\SupportedItems;
 use App\Domain\Item;
 use InvalidArgumentException;
 

@@ -6,7 +6,7 @@ namespace App\Domain;
 
 use App\Domain\Exceptions\NotEnoughChangeException;
 use InvalidArgumentException;
-use App\Domain\SupportedCoins;
+use App\SupportedCoins;
 
 class CoinInventory
 {
