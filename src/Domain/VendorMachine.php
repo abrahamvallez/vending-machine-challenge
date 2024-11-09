@@ -6,6 +6,8 @@ namespace App\Domain;
 
 use App\Domain\Exceptions\NotEnoughInventoryException;
 use App\Domain\Exceptions\NotEnoughMoneyException;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestStatus\Success;
 
 class VendorMachine
 {
@@ -28,19 +30,24 @@ class VendorMachine
     return $this->itemsInventory;
   }
 
-  public function buy(string $item): Sale
+  public function buy(Item $item): Sale
   {
+    if (!SupportedItems::isCorrectItemName($item->name)) {
+      throw new InvalidArgumentException('Item not supported: ' . $item->name);
+    }
+
     $change = [];
-    if ($this->itemsInventory[$item] === 0) {
+    if ($this->itemsInventory[$item->name] === 0) {
       throw new NotEnoughInventoryException('Not enough inventory');
     }
-    if ($this->moneyInserted < Coin::fromValueOnCents(100)->value) {
+    if ($this->moneyInserted < $item->value) {
       throw new NotEnoughMoneyException('Not enough money inserted');
     }
-    if ($this->moneyInserted > Coin::fromValueOnCents(100)->value) {
-      $change = $this->coinInventory->getCoinsForChange($this->moneyInserted, 100);
+    if ($this->moneyInserted > $item->value) {
+      $change = $this->coinInventory->getCoinsForChange($this->moneyInserted, $item->value);
     }
-    $this->itemsInventory[$item]--;
+    $this->itemsInventory[$item->name]--;
+    $this->moneyInserted = 0;
     return new Sale($change, $item);
   }
 }

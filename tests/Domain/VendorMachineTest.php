@@ -6,6 +6,8 @@ use PHPUnit\Framework\{Attributes\Group, Attributes\DataProvider, TestCase};
 use App\Domain\{VendorMachine, Coin, Sale, CoinInventory};
 use App\Domain\Exceptions\{NotEnoughMoneyException, NotEnoughInventoryException, NotEnoughChangeException};
 use App\Domain\SupportedItems;
+use App\Domain\Item;
+use InvalidArgumentException;
 
 class VendorMachineTest extends TestCase
 {
@@ -28,11 +30,22 @@ class VendorMachineTest extends TestCase
   }
 
   #[Group('buy_items')]
-  public function testReturnItemWhenBuy(): void
+  #[DataProvider('buyItemProvider')]
+  public function testReturnItemWhenBuy(array $coins, Item $item): void
   {
-    $this->vendorMachine->insertCoin(Coin::oneEuro());
-    $sale = $this->vendorMachine->buy(SupportedItems::JUICE->name);
-    $this->assertEquals(SupportedItems::JUICE->name, $sale->item);
+    $this->insertCoinsToVendorMachine($coins);
+    $sale = $this->vendorMachine->buy($item);
+    $this->assertEquals($item->name, $sale->item->name);
+  }
+
+  #[Group('buy_items')]
+  public static function buyItemProvider(): array
+  {
+    return [
+      'JUICE' => [[Coin::oneEuro()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      'SODA' => [[Coin::oneEuro(), Coin::quarter(), Coin::quarter()], new Item(SupportedItems::SODA->name, SupportedItems::SODA->value)],
+      'WATER' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::nickel()], new Item(SupportedItems::WATER->name, SupportedItems::WATER->value)],
+    ];
   }
 
   #[Group('buy_items')]
@@ -41,9 +54,18 @@ class VendorMachineTest extends TestCase
     $itemInventory = $this->vendorMachine->getInventory();
     $this->assertEquals(1, $itemInventory[SupportedItems::JUICE->name]);
     $this->vendorMachine->insertCoin(Coin::oneEuro());
-    $this->vendorMachine->buy(SupportedItems::JUICE->name);
+    $item = new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value);
+    $this->vendorMachine->buy($item);
     $itemInventory = $this->vendorMachine->getInventory();
     $this->assertEquals(0, $itemInventory[SupportedItems::JUICE->name]);
+  }
+
+  #[Group('buy_items')]
+  public function testThrowExceptionWhenItemIsSupported(): void
+  {
+    $item = new Item('not supported item', 1);
+    $this->expectException(InvalidArgumentException::class);
+    $this->vendorMachine->buy($item);
   }
 
   #[Group('buy_items')]
@@ -51,8 +73,10 @@ class VendorMachineTest extends TestCase
   public function testNotSellIfNotEnoughMoney(array $coins): void
   {
     $this->insertCoinsToVendorMachine($coins);
+    $item = new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value);
+
     $this->expectException(NotEnoughMoneyException::class);
-    $this->vendorMachine->buy(SupportedItems::JUICE->name);
+    $this->vendorMachine->buy($item);
   }
 
   public static function notEnoughMoneyProvider(): array
@@ -70,43 +94,43 @@ class VendorMachineTest extends TestCase
   public function testNotSellIfNotEnoughInventory(): void
   {
     $this->vendorMachine->insertCoin(Coin::oneEuro());
-    $this->vendorMachine->buy(SupportedItems::JUICE->name);
+    $item = new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value);
     $this->expectException(NotEnoughInventoryException::class, 'Not enough inventory');
-    $this->vendorMachine->buy(SupportedItems::JUICE->name);
+    $this->vendorMachine->buy($item);
+    $this->vendorMachine->buy($item);
   }
 
   #[Group('returning_change')]
   #[DataProvider('buyItemWithExactMoneyProvider')]
-  public function testGetItemAndNoChangeWhenBuyWithExactMoney(array $coins, string $itemName): void
+  public function testGetItemAndNoChangeWhenBuyWithExactMoney(array $coins, Item $item): void
   {
-    $expectedSale = new Sale([], $itemName);
+    $expectedSale = new Sale([], $item);
     $this->insertCoinsToVendorMachine($coins);
-    $this->assertEquals($expectedSale, $this->vendorMachine->buy($itemName));
+    $this->assertEquals($expectedSale, $this->vendorMachine->buy($item));
   }
 
   #[Group('returning_change')]
   public static function buyItemWithExactMoneyProvider(): array
   {
     return [
-      '1 euro' => [[Coin::oneEuro()], SupportedItems::JUICE->name],
-      '0.25 cents' => [array_fill(0, 4, Coin::quarter()), SupportedItems::JUICE->name],
-      '0.10 cents' => [array_fill(0, 10, Coin::ten()), SupportedItems::JUICE->name],
-      '0.05 cents' => [array_fill(0, 20, Coin::nickel()), SupportedItems::JUICE->name],
-      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 nickel, 1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::nickel(), Coin::quarter()], SupportedItems::JUICE->name],
-      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 ten, 1 ten, 1 ten' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten()], SupportedItems::JUICE->name],
-      '1 nickel, 1 quarter, 1 nickel, 1 nickel, 1 ten, 1 quarter, 1 quarter' => [[Coin::nickel(), Coin::quarter(), Coin::nickel(), Coin::nickel(), Coin::ten(), Coin::quarter(), Coin::quarter()], SupportedItems::JUICE->name],
+      '1 euro' => [[Coin::oneEuro()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '0.25 cents' => [array_fill(0, 4, Coin::quarter()), new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '0.10 cents' => [array_fill(0, 10, Coin::ten()), new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '0.05 cents' => [array_fill(0, 20, Coin::nickel()), new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 nickel, 1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::nickel(), Coin::quarter()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '1 quarter, 1 quarter, 1 ten, 1 ten, 1 ten, 1 ten, 1 ten' => [[Coin::quarter(), Coin::quarter(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten(), Coin::ten()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '1 nickel, 1 quarter, 1 nickel, 1 nickel, 1 ten, 1 quarter, 1 quarter' => [[Coin::nickel(), Coin::quarter(), Coin::nickel(), Coin::nickel(), Coin::ten(), Coin::quarter(), Coin::quarter()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
     ];
   }
 
   #[Group('returning_change')]
   #[DataProvider('changeWhenBuyWithMoreMoneyProvider')]
-  public function testReturnCorrectValueChangeWhenBuyWithMoreMoney(array $coins, string $itemName): void
+  public function testReturnCorrectValueChangeWhenBuyWithMoreMoney(array $coins, Item $item): void
   {
     $this->insertCoinsToVendorMachine($coins);
     $insertedValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $coins));
-    $expectedChangeMoneyValue = $insertedValue - 100;
-
-    $return = $this->vendorMachine->buy($itemName);
+    $expectedChangeMoneyValue = $insertedValue - $item->value;
+    $return = $this->vendorMachine->buy($item);
     $changeValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $return->change));
     $this->assertEquals($expectedChangeMoneyValue, $changeValue);
   }
@@ -114,11 +138,11 @@ class VendorMachineTest extends TestCase
   public static function changeWhenBuyWithMoreMoneyProvider(): array
   {
     return [
-      '1 quarter' => [[Coin::oneEuro(), Coin::quarter()], SupportedItems::JUICE->name],
-      '1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter()], SupportedItems::JUICE->name],
-      '1 quarter, 1 ten' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten()], SupportedItems::JUICE->name],
-      '1 quarter, 1 ten, 1 nickel' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()], SupportedItems::JUICE->name],
-      '1 ten' => [[Coin::oneEuro(), Coin::nickel(), Coin::nickel()], SupportedItems::JUICE->name],
+      '1 quarter' => [[Coin::oneEuro(), Coin::quarter()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '1 quarter' => [[Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter(), Coin::quarter()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '1 quarter, 1 ten' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '1 quarter, 1 ten, 1 nickel' => [[Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
+      '1 ten' => [[Coin::oneEuro(), Coin::nickel(), Coin::nickel()], new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value)],
     ];
   }
 
@@ -126,6 +150,7 @@ class VendorMachineTest extends TestCase
   {
     $this->expectException(NotEnoughChangeException::class);
     $this->insertCoinsToVendorMachine([Coin::quarter(), ...array_fill(0, 8, Coin::ten())]);
-    $this->vendorMachine->buy(SupportedItems::JUICE->name);
+    $item = new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value);
+    $this->vendorMachine->buy($item);
   }
 }

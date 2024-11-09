@@ -14,4 +14,9 @@ enum SupportedItems: int
   {
     return in_array($itemName, array_map(fn($item) => $item->name, self::cases()), true);
   }
+
+  public static function fromName(string $itemName): SupportedItems
+  {
+    return self::cases()[$itemName];
+  }
 }

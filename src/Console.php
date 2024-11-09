@@ -7,6 +7,7 @@ use App\Domain\Coin;
 use App\Domain\CoinInventory;
 use App\Domain\SupportedCoins;
 use App\Domain\SupportedItems;
+use App\Domain\Item;
 
 class Console
 {
@@ -22,8 +23,12 @@ class Console
             'help' => 'Shows the list of available commands',
             '1' => 'Insert one euro',
             '0.25' => 'Insert 25 euro cents',
+            '0.10' => 'Insert 10 euro cents',
+            '0.05' => 'Insert 5 euro cents',
+            'JUICE' => 'Buy a juice',
+            'SODA' => 'Buy a soda',
+            'WATER' => 'Buy a water',
             'exit' => 'Exit application',
-            SupportedItems::JUICE->name => 'Buy a juice',
             'clear' => 'Clear screen',
         ];
     }
@@ -64,7 +69,13 @@ class Console
                 $this->vendorMachine->insertCoin(Coin::nickel());
                 break;
             case SupportedItems::JUICE->name:
-                $this->buyJuice();
+                $this->buyItem(SupportedItems::JUICE);
+                break;
+            case SupportedItems::SODA->name:
+                $this->buyItem(SupportedItems::SODA);
+                break;
+            case SupportedItems::WATER->name:
+                $this->buyItem(SupportedItems::WATER);
                 break;
             default:
                 echo "Command not supported. Type 'help' to see available commands.\n";
@@ -79,11 +90,11 @@ class Console
         }
     }
 
-    protected function buyJuice(): void
+    protected function buyItem(SupportedItems $item): void
     {
         try {
-            $sale = $this->vendorMachine->buy(SupportedItems::JUICE->name);
-            echo sprintf("Here's your %s, thank you\n", $sale->item);
+            $sale = $this->vendorMachine->buy(new Item($item->name, $item->value));
+            echo sprintf("Here's your %s, thank you\n", $sale->item->name);
             if (count($sale->change) > 0) {
                 echo sprintf("Here's your change: %s\n", implode(', ', array_map(fn(Coin $coin) => $coin->value, $sale->change)));
             }
