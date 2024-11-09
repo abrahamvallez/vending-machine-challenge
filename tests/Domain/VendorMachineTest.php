@@ -128,10 +128,10 @@ class VendorMachineTest extends TestCase
   public function testReturnCorrectValueChangeWhenBuyWithMoreMoney(array $coins, Item $item): void
   {
     $this->insertCoinsToVendorMachine($coins);
-    $insertedValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $coins));
+    $insertedValue = Coin::coinsValue($coins);
     $expectedChangeMoneyValue = $insertedValue - $item->value;
     $return = $this->vendorMachine->buy($item);
-    $changeValue = array_sum(array_map(fn(Coin $coin) => $coin->value, $return->change));
+    $changeValue = Coin::coinsValue($return->change);
     $this->assertEquals($expectedChangeMoneyValue, $changeValue);
   }
 
@@ -152,5 +152,12 @@ class VendorMachineTest extends TestCase
     $this->insertCoinsToVendorMachine([Coin::quarter(), ...array_fill(0, 8, Coin::ten())]);
     $item = new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value);
     $this->vendorMachine->buy($item);
+  }
+
+  public function testCashBackReturnsMoneyInserted(): void
+  {
+    $this->insertCoinsToVendorMachine([Coin::oneEuro(), Coin::quarter()]);
+    $change = $this->vendorMachine->cashBack();
+    $this->assertEquals(125, Coin::coinsValue($change));
   }
 }

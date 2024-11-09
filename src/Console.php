@@ -28,6 +28,7 @@ class Console
             'JUICE' => 'Buy a juice',
             'SODA' => 'Buy a soda',
             'WATER' => 'Buy a water',
+            'cash-back' => 'Get money back',
             'exit' => 'Exit application',
             'clear' => 'Clear screen',
         ];
@@ -55,6 +56,10 @@ class Console
             case 'exit':
                 $this->running = false;
                 echo "See you later, alligator!\n";
+                break;
+            case 'cash-back':
+                $change = $this->vendorMachine->cashBack();
+                echo sprintf("Here's your change: %s\n", implode(', ', array_map(fn(Coin $coin) => $coin->value, $change)));
                 break;
             case '1':
                 $this->vendorMachine->insertCoin(Coin::oneEuro());

@@ -43,17 +43,22 @@ class CoinInventory
     return $this->calculateChange($remainingChange);
   }
 
-  private function calculateChange(int &$remainingChange): array
+  public function getValueInCoins(int $value): array
+  {
+    return $this->calculateChange($value);
+  }
+
+  private function calculateChange(int $value): array
   {
     $change = [];
     foreach (SupportedCoins::cases() as $coin) {
-      while ($remainingChange >= $coin->value && $this->quantities[$coin->value] > 0) {
-        $remainingChange -= $coin->value;
+      while ($value >= $coin->value && $this->quantities[$coin->value] > 0) {
+        $value -= $coin->value;
         $change[] = Coin::fromValueOnCents($coin->value);
         $this->quantities[$coin->value]--;
       }
     }
-    if ($remainingChange > 0) {
+    if ($value > 0) {
       throw new NotEnoughChangeException();
     }
     return $change;

@@ -36,4 +36,9 @@ class Coin
   {
     return new self($value);
   }
+
+  public static function coinsValue(array $coins): int
+  {
+    return array_sum(array_map(fn(Coin $coin) => $coin->value, $coins));
+  }
 }

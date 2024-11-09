@@ -55,7 +55,7 @@ class CoinInventoryTest extends TestCase
       SupportedCoins::NICKEL->value => 10,
     ]);
     $change = $inventory->getCoinsForChange($moneyInserted, $itemPrice);
-    $this->assertEquals($valueExpected, array_sum(array_map(fn($coin) => $coin->value, $change)));
+    $this->assertEquals($valueExpected, Coin::coinsValue($change));
   }
 
   public static function getCoinsForChangeDataProvider(): array
@@ -89,5 +89,18 @@ class CoinInventoryTest extends TestCase
     ]);
     $this->expectException(NotEnoughChangeException::class);
     $inventory->getCoinsForChange(150, 100);
+  }
+
+  public function testGetValueInCoinsReturnsCoinsWithCorrectValue(): void
+  {
+    $inventory = new CoinInventory([
+      SupportedCoins::ONE_EURO->value => 1,
+      SupportedCoins::QUARTER->value => 1,
+    ]);
+    $change = $inventory->getValueInCoins(125);
+    $this->assertEquals([
+      Coin::oneEuro(),
+      Coin::quarter(),
+    ], $change);
   }
 }

@@ -50,4 +50,11 @@ class VendorMachine
     $this->moneyInserted = 0;
     return new Sale($change, $item);
   }
+
+  public function cashBack(): array
+  {
+    $change = $this->coinInventory->getValueInCoins($this->moneyInserted);
+    $this->moneyInserted = 0;
+    return $change;
+  }
 }
