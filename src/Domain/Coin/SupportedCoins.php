@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Domain\Coin;
 
-use App\Domain\Coin;
+use App\Domain\Coin\Coin;
 
 enum SupportedCoins: int
 {

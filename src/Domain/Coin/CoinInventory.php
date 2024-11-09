@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain;
+namespace App\Domain\Coin;
 
 use App\Domain\Exceptions\NotEnoughChangeException;
 use InvalidArgumentException;
-use App\SupportedCoins;
+use App\Domain\Coin\SupportedCoins;
 
 class CoinInventory
 {

@@ -5,11 +5,8 @@ namespace App\Console;
 use App\Actions;
 use App\Console\ConsoleDisplay;
 use App\Domain\VendorMachine;
-use App\Domain\Coin;
-use App\Domain\CoinInventory;
-use App\SupportedCoins;
-use App\SupportedItems;
-use App\Domain\Item;
+use App\Domain\Coin\{CoinInventory, Coin, SupportedCoins};
+use App\Domain\Item\{Item, SupportedItems};
 
 class Console
 {
@@ -172,7 +169,7 @@ class Console
         $this->display->showServiceItemName("Enter item name (WATER/SODA/JUICE/...): ");
         $itemName = trim(fgets(STDIN));
 
-        if (!SupportedItems::isCorrectItemName($itemName)) {
+        if (!Item::isSupportedItem($itemName)) {
             throw new \InvalidArgumentException('Invalid item name');
         }
 

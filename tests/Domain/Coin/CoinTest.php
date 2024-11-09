@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Domain;
 
 use PHPUnit\Framework\TestCase;
-use App\Domain\Coin;
+use App\Domain\Coin\Coin;
 
 class CoinTest extends TestCase
 {

@@ -2,6 +2,8 @@
 
 namespace App\Domain;
 
+use App\Domain\Item\Item;
+
 class Sale
 {
   public function __construct(

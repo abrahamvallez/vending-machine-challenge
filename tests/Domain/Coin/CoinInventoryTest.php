@@ -3,8 +3,8 @@
 namespace Tests\Domain;
 
 use PHPUnit\Framework\{Attributes\DataProvider, TestCase};
-use App\Domain\{CoinInventory, Coin, Exceptions\NotEnoughChangeException};
-use App\{SupportedItems, SupportedCoins};
+use App\Domain\Exceptions\NotEnoughChangeException;
+use App\Domain\Coin\{SupportedCoins, Coin, CoinInventory};
 use InvalidArgumentException;
 
 class CoinInventoryTest extends TestCase

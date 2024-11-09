@@ -3,10 +3,10 @@
 namespace App\Tests;
 
 use PHPUnit\Framework\{Attributes\Group, Attributes\DataProvider, TestCase};
-use App\Domain\{VendorMachine, Coin, Sale, CoinInventory};
+use App\Domain\Coin\{CoinInventory, Coin};
+use App\Domain\{VendorMachine, Sale};
 use App\Domain\Exceptions\{NotEnoughMoneyException, NotEnoughInventoryException, NotEnoughChangeException};
-use App\SupportedItems;
-use App\Domain\Item;
+use App\Domain\Item\{SupportedItems, Item};
 use InvalidArgumentException;
 
 class VendorMachineTest extends TestCase

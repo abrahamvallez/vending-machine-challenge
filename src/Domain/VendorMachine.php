@@ -8,7 +8,10 @@ use App\Domain\Exceptions\NotEnoughInventoryException;
 use App\Domain\Exceptions\NotEnoughMoneyException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestStatus\Success;
-use App\SupportedItems;
+use App\Domain\Item\SupportedItems;
+use App\Domain\Coin\CoinInventory;
+use App\Domain\Coin\Coin;
+use App\Domain\Item\Item;
 
 class VendorMachine
 {
@@ -34,7 +37,7 @@ class VendorMachine
 
   public function buy(Item $item): Sale
   {
-    if (!SupportedItems::isCorrectItemName($item->name)) {
+    if (!Item::isSupportedItem($item->name)) {
       throw new InvalidArgumentException('Item not supported: ' . $item->name);
     }
 
@@ -73,7 +76,7 @@ class VendorMachine
 
   public function setItemQuantity(string $itemName, int $quantity): void
   {
-    if (!SupportedItems::isCorrectItemName($itemName)) {
+    if (!Item::isSupportedItem($itemName)) {
       throw new InvalidArgumentException('Item not supported: ' . $itemName);
     }
     if ($quantity < 0) {
