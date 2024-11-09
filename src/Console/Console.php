@@ -5,7 +5,7 @@ namespace App\Console;
 use App\Actions;
 use App\Console\ConsoleDisplay;
 use App\Domain\VendorMachine;
-use App\Domain\Coin\{CoinInventory, Coin, SupportedCoins};
+use App\Domain\Coin\{CashBox, Coin, SupportedCoins};
 use App\Domain\Item\{Item, SupportedItems};
 
 class Console
@@ -17,11 +17,11 @@ class Console
 
     public function __construct()
     {
-        $coinInventory = array_fill_keys(
+        $CashBox = array_fill_keys(
             array_map(fn(SupportedCoins $coin) => $coin->value, SupportedCoins::cases()),
             5
         );
-        $this->vendorMachine = new VendorMachine(new CoinInventory($coinInventory));
+        $this->vendorMachine = new VendorMachine(new CashBox($CashBox));
         $this->display = new ConsoleDisplay();
     }
 
@@ -154,7 +154,7 @@ class Console
 
     private function showCash(): void
     {
-        $cash = $this->vendorMachine->getChangeValue();
+        $cash = $this->vendorMachine->getCashAvailable();
         $this->display->showCash($cash);
     }
 
@@ -196,8 +196,8 @@ class Console
         }
 
         try {
-            $cash = new CoinInventory($cash);
-            $this->vendorMachine->setChange($cash);
+            $cashBox = new CashBox($cash);
+            $this->vendorMachine->setCashAvailable($cashBox);
             $this->display->showMessage("Cash amount updated successfully\n");
         } catch (\Throwable $th) {
             $this->display->showError($th->getMessage());

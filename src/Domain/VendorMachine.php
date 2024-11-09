@@ -9,7 +9,7 @@ use App\Domain\Exceptions\NotEnoughMoneyException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestStatus\Success;
 use App\Domain\Item\SupportedItems;
-use App\Domain\Coin\CoinInventory;
+use App\Domain\Coin\CashBox;
 use App\Domain\Coin\Coin;
 use App\Domain\Item\Item;
 
@@ -18,7 +18,7 @@ class VendorMachine
   private int $moneyInserted = 0;
   private int $revenue = 0;
 
-  public function __construct(private CoinInventory $coinInventory = new CoinInventory(), private array $itemsInventory = [
+  public function __construct(private CashBox $CashBox = new CashBox(), private array $itemsInventory = [
     SupportedItems::JUICE->name => 5,
     SupportedItems::SODA->name => 5,
     SupportedItems::WATER->name => 5,
@@ -27,7 +27,7 @@ class VendorMachine
   public function insertCoin(Coin $coin): void
   {
     $this->moneyInserted += $coin->value;
-    $this->coinInventory->addCoin($coin);
+    $this->CashBox->addCoin($coin);
   }
 
   public function getInventory(): array
@@ -49,7 +49,7 @@ class VendorMachine
       throw new NotEnoughMoneyException('Not enough money inserted');
     }
     if ($this->moneyInserted > $item->price) {
-      $change = $this->coinInventory->getCoinsForChange($this->moneyInserted, $item->price);
+      $change = $this->CashBox->getCoinsForChange($this->moneyInserted, $item->price);
     }
     $this->itemsInventory[$item->selector]--;
     $this->moneyInserted = 0;
@@ -59,14 +59,14 @@ class VendorMachine
 
   public function cashBack(): array
   {
-    $change = $this->coinInventory->getValueInCoins($this->moneyInserted);
+    $change = $this->CashBox->getValueInCoins($this->moneyInserted);
     $this->moneyInserted = 0;
     return $change;
   }
 
-  public function getChangeValue(): array
+  public function getCashAvailable(): array
   {
-    return $this->coinInventory->getQuantities();
+    return $this->CashBox->getCashQuantities();
   }
 
   public function getRevenue(): int
@@ -85,8 +85,8 @@ class VendorMachine
     $this->itemsInventory[$itemSelector] = $quantity;
   }
 
-  public function setChange(CoinInventory $coinInventory): void
+  public function setCashAvailable(CashBox $cashBox): void
   {
-    $this->coinInventory = $coinInventory;
+    $this->CashBox = $cashBox;
   }
 }

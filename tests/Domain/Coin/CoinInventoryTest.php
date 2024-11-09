@@ -4,43 +4,43 @@ namespace Tests\Domain;
 
 use PHPUnit\Framework\{Attributes\DataProvider, TestCase};
 use App\Domain\Exceptions\NotEnoughChangeException;
-use App\Domain\Coin\{SupportedCoins, Coin, CoinInventory};
+use App\Domain\Coin\{SupportedCoins, Coin, CashBox};
 use InvalidArgumentException;
 
-class CoinInventoryTest extends TestCase
+class CashBoxTest extends TestCase
 {
   public function testQuantitiesAreInitializedWithZero(): void
   {
-    $inventory = new CoinInventory();
+    $cashBox = new CashBox();
     $this->assertEquals([
       SupportedCoins::ONE_EURO->value => 0,
       SupportedCoins::QUARTER->value => 0,
       SupportedCoins::TEN->value => 0,
       SupportedCoins::NICKEL->value => 0,
-    ], $inventory->getQuantities());
+    ], $cashBox->getCashQuantities());
   }
 
   public function testCoinsNotCorrectForInitInventory(): void
   {
     $this->expectException(InvalidArgumentException::class);
-    new CoinInventory([1 => 10]);
+    new CashBox([1 => 10]);
   }
 
   public function testAddCoinMakesItAvailableForChange(): void
   {
-    $inventory = new CoinInventory();
-    $inventory->addCoin(Coin::oneEuro());
+    $cashBox = new CashBox();
+    $cashBox->addCoin(Coin::oneEuro());
     $this->assertEquals([
       SupportedCoins::ONE_EURO->value => 1,
       SupportedCoins::QUARTER->value => 0,
       SupportedCoins::TEN->value => 0,
       SupportedCoins::NICKEL->value => 0,
-    ], $inventory->getQuantities());
+    ], $cashBox->getCashQuantities());
   }
 
   public function testThrowExceptionWhenAddingUnsupportedCoin(): void
   {
-    $inventory = new CoinInventory();
+    $inventory = new CashBox();
     $this->expectException(InvalidArgumentException::class);
     $inventory->addCoin(Coin::fromValueOnCents(1000));
   }
@@ -49,7 +49,7 @@ class CoinInventoryTest extends TestCase
   public function testReturnCorrectValueInCoins(int $moneyInserted, int $itemPrice): void
   {
     $valueExpected = $moneyInserted - $itemPrice;
-    $inventory = new CoinInventory([
+    $inventory = new CashBox([
       SupportedCoins::ONE_EURO->value => 10,
       SupportedCoins::QUARTER->value => 10,
       SupportedCoins::TEN->value => 10,
@@ -70,7 +70,7 @@ class CoinInventoryTest extends TestCase
 
   public function testCoinsNotCorrectForChange(): void
   {
-    $inventory = new CoinInventory([
+    $inventory = new CashBox([
       SupportedCoins::ONE_EURO->value => 1,
       SupportedCoins::QUARTER->value => 0,
       SupportedCoins::TEN->value => 0,
@@ -82,7 +82,7 @@ class CoinInventoryTest extends TestCase
 
   public function testNotEnoughMoneyForChange(): void
   {
-    $inventory = new CoinInventory([
+    $inventory = new CashBox([
       SupportedCoins::ONE_EURO->value => 0,
       SupportedCoins::QUARTER->value => 0,
       SupportedCoins::TEN->value => 1,
@@ -94,7 +94,7 @@ class CoinInventoryTest extends TestCase
 
   public function testGetValueInCoinsReturnsCoinsWithCorrectValue(): void
   {
-    $inventory = new CoinInventory([
+    $inventory = new CashBox([
       SupportedCoins::ONE_EURO->value => 1,
       SupportedCoins::QUARTER->value => 1,
     ]);

@@ -8,19 +8,21 @@ use App\Domain\Exceptions\NotEnoughChangeException;
 use InvalidArgumentException;
 use App\Domain\Coin\SupportedCoins;
 
-class CoinInventory
+class CashBox
 {
-  private array $quantities;
+  private array $cashQuantities;
 
-  public function __construct(array $coinInventory = [])
+  public function __construct(array $cashQuantities = [])
   {
-    $this->setQuantitiesTo0();
-    $this->setQuantitiesFrom($coinInventory);
+    $this->setCashQuantitiesTo0();
+    $this->setCashQuantitiesFrom(
+      $cashQuantities
+    );
   }
 
-  public function getQuantities(): array
+  public function getCashQuantities(): array
   {
-    return $this->quantities;
+    return $this->cashQuantities;
   }
 
   public function addCoin(Coin $coin): void
@@ -28,7 +30,7 @@ class CoinInventory
     if (!SupportedCoins::isSupported($coin)) {
       throw new InvalidArgumentException('Coin not supported: ' . $coin->value);
     }
-    $this->quantities[$coin->value]++;
+    $this->cashQuantities[$coin->value]++;
   }
 
   public function getCoinsForChange(int $moneyInserted, int $itemPrice): array
@@ -43,9 +45,9 @@ class CoinInventory
     return $this->calculateChange($value);
   }
 
-  private function setQuantitiesTo0(): void
+  private function setCashQuantitiesTo0(): void
   {
-    $this->quantities = array_fill_keys(
+    $this->cashQuantities = array_fill_keys(
       array_map(
         fn($supportedCoin) => $supportedCoin->value,
         SupportedCoins::cases()
@@ -54,14 +56,18 @@ class CoinInventory
     );
   }
 
-  private function setQuantitiesFrom(array $coinInventory): void
-  {
-    foreach ($coinInventory as $coinValue => $quantity) {
+  private function setCashQuantitiesFrom(
+    array $cashQuantities
+  ): void {
+    foreach (
+      $cashQuantities
+      as $coinValue => $quantity
+    ) {
       $coin = Coin::fromValueOnCents($coinValue);
       if (!SupportedCoins::isSupported($coin)) {
         throw new InvalidArgumentException('Coin not supported: ' . $coinValue);
       }
-      $this->quantities[$coin->value] = $quantity;
+      $this->cashQuantities[$coin->value] = $quantity;
     }
   }
 
@@ -69,10 +75,10 @@ class CoinInventory
   {
     $change = [];
     foreach (SupportedCoins::cases() as $coin) {
-      while ($value >= $coin->value && $this->quantities[$coin->value] > 0) {
+      while ($value >= $coin->value && $this->cashQuantities[$coin->value] > 0) {
         $value -= $coin->value;
         $change[] = Coin::fromValueOnCents($coin->value);
-        $this->quantities[$coin->value]--;
+        $this->cashQuantities[$coin->value]--;
       }
     }
     if ($value > 0) {

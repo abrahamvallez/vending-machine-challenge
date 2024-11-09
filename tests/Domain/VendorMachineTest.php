@@ -3,7 +3,7 @@
 namespace App\Tests;
 
 use PHPUnit\Framework\{Attributes\Group, Attributes\DataProvider, TestCase};
-use App\Domain\Coin\{CoinInventory, Coin};
+use App\Domain\Coin\{CashBox, Coin};
 use App\Domain\{VendorMachine, Sale};
 use App\Domain\Exceptions\{NotEnoughMoneyException, NotEnoughInventoryException, NotEnoughChangeException};
 use App\Domain\Item\{SupportedItems, Item};
@@ -15,7 +15,7 @@ class VendorMachineTest extends TestCase
 
   protected function setUp(): void
   {
-    $this->vendorMachine = new VendorMachine(new CoinInventory(), [
+    $this->vendorMachine = new VendorMachine(new CashBox(), [
       SupportedItems::JUICE->name => 1,
       SupportedItems::SODA->name => 1,
       SupportedItems::WATER->name => 1,
@@ -163,15 +163,15 @@ class VendorMachineTest extends TestCase
 
   public function testGetChangeReturnsEmptyArrayWhenNoChangeAvailable(): void
   {
-    $change = $this->vendorMachine->getChangeValue();
-    $this->assertEquals([100 => 0, 25 => 0, 10 => 0, 5 => 0], $change);
+    $cashAvailable = $this->vendorMachine->getCashAvailable();
+    $this->assertEquals([100 => 0, 25 => 0, 10 => 0, 5 => 0], $cashAvailable);
   }
 
   public function testGetChangeReturnsCoinsAvailableForChange(): void
   {
     $this->insertCoinsToVendorMachine([Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()]);
-    $change = $this->vendorMachine->getChangeValue();
-    $this->assertEquals([100 => 1, 25 => 1, 10 => 1, 5 => 1], $change);
+    $cashAvailable = $this->vendorMachine->getCashAvailable();
+    $this->assertEquals([100 => 1, 25 => 1, 10 => 1, 5 => 1], $cashAvailable);
   }
 
   public function testGetRevenueReturnsZeroWhenNoSales(): void
@@ -216,9 +216,9 @@ class VendorMachineTest extends TestCase
     $this->vendorMachine->setItemQuantity(SupportedItems::JUICE->name, -1);
   }
 
-  public function testSetChangeSwitchesCoinInventory(): void
+  public function testSetChangeSwitchesCashBox(): void
   {
-    $this->vendorMachine->setChange(new CoinInventory([100 => 1, 25 => 1, 10 => 1, 5 => 1]));
-    $this->assertEquals([100 => 1, 25 => 1, 10 => 1, 5 => 1], $this->vendorMachine->getChangeValue());
+    $this->vendorMachine->setCashAvailable(new CashBox([100 => 1, 25 => 1, 10 => 1, 5 => 1]));
+    $this->assertEquals([100 => 1, 25 => 1, 10 => 1, 5 => 1], $this->vendorMachine->getCashAvailable());
   }
 }
