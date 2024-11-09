@@ -27,10 +27,7 @@ class CashBox
 
   public function addCoin(Coin $coin): void
   {
-    if (!SupportedCoins::isSupported($coin)) {
-      throw new InvalidArgumentException('Coin not supported: ' . $coin->value);
-    }
-    $this->cashQuantities[$coin->value]++;
+    $this->cashQuantities[$coin->getValueInCents()]++;
   }
 
   public function getCoinsForChange(int $moneyInserted, int $itemPrice): array
@@ -47,38 +44,26 @@ class CashBox
 
   private function setCashQuantitiesTo0(): void
   {
-    $this->cashQuantities = array_fill_keys(
-      array_map(
-        fn($supportedCoin) => $supportedCoin->value,
-        SupportedCoins::cases()
-      ),
-      0
-    );
+    foreach (SupportedCoins::cases() as $coinType) {
+      $this->cashQuantities[$coinType->value] = 0;
+    }
   }
 
-  private function setCashQuantitiesFrom(
-    array $cashQuantities
-  ): void {
-    foreach (
-      $cashQuantities
-      as $coinValue => $quantity
-    ) {
-      $coin = Coin::fromValueOnCents($coinValue);
-      if (!SupportedCoins::isSupported($coin)) {
-        throw new InvalidArgumentException('Coin not supported: ' . $coinValue);
-      }
-      $this->cashQuantities[$coin->value] = $quantity;
+  private function setCashQuantitiesFrom(array $cashQuantities): void
+  {
+    foreach ($cashQuantities as $coinValue => $quantity) {
+      $this->cashQuantities[$coinValue] = $quantity;
     }
   }
 
   private function calculateChange(int $value): array
   {
     $change = [];
-    foreach (SupportedCoins::cases() as $coin) {
-      while ($value >= $coin->value && $this->cashQuantities[$coin->value] > 0) {
-        $value -= $coin->value;
-        $change[] = Coin::fromValueOnCents($coin->value);
-        $this->cashQuantities[$coin->value]--;
+    foreach (SupportedCoins::getValues() as $coinValue) {
+      while ($value >= $coinValue && $this->cashQuantities[$coinValue] > 0) {
+        $value -= $coinValue;
+        $change[] = Coin::fromValueOnCents($coinValue);
+        $this->cashQuantities[$coinValue]--;
       }
     }
     if ($value > 0) {

@@ -2,8 +2,14 @@
 
 namespace Tests\Domain\Item;
 
-use App\Domain\Item\Item;
 use PHPUnit\Framework\TestCase;
-use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Ignore;
 
-class ItemTest extends TestCase {}
+#[Ignore('Tests not implemented yet')]
+class ItemTest extends TestCase
+{
+  public function test_placeholder(): void
+  {
+    $this->assertTrue(true);
+  }
+}

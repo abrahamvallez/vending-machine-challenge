@@ -12,26 +12,26 @@ class CoinTest extends TestCase
 
   public function testCreate1EuroIs100Cents(): void
   {
-    $this->assertEquals(100, Coin::oneEuro()->value);
+    $this->assertEquals(100, Coin::oneEuro()->getValueInCents());
   }
 
   public function testCreateQuarterIs25Cents(): void
   {
-    $this->assertEquals(25, Coin::quarter()->value);
+    $this->assertEquals(25, Coin::quarter()->getValueInCents());
   }
 
   public function testCreateTenIs10Cents(): void
   {
-    $this->assertEquals(10, Coin::ten()->value);
+    $this->assertEquals(10, Coin::ten()->getValueInCents());
   }
 
   public function testCreateNickelIs5Cents(): void
   {
-    $this->assertEquals(5, Coin::nickel()->value);
+    $this->assertEquals(5, Coin::nickel()->getValueInCents());
   }
 
-  public function testCreateFromValueSetCorrectValue(): void
+  public function testSumValuesOfCoins(): void
   {
-    $this->assertEquals(1, Coin::fromValueOnCents(1)->value);
+    $this->assertEquals(115, Coin::coinsValue([Coin::oneEuro(), Coin::ten(), Coin::nickel()]));
   }
 }

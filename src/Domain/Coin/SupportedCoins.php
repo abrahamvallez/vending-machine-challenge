@@ -15,6 +15,11 @@ enum SupportedCoins: int
 
   public static function isSupported(Coin $coin): bool
   {
-    return in_array($coin->value, array_map(fn($c) => $c->value, self::cases()), true);
+    return in_array($coin->getValueInCents(), array_map(fn($c) => $c->value, self::cases()), true);
+  }
+
+  public static function getValues(): array
+  {
+    return array_map(fn($c) => $c->value, self::cases());
   }
 }

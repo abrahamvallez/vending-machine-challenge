@@ -27,7 +27,7 @@ class ConsoleDisplay
   {
     echo sprintf(
       "Here's your change: %s\n",
-      implode(', ', array_map(fn($coin) => $coin->value, $coins))
+      implode(', ', array_map(fn($coin) => $coin->getValueInCents(), $coins))
     );
   }
 

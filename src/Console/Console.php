@@ -17,11 +17,11 @@ class Console
 
     public function __construct()
     {
-        $CashBox = array_fill_keys(
-            array_map(fn(SupportedCoins $coin) => $coin->value, SupportedCoins::cases()),
+        $cashBox = array_fill_keys(
+            array_map(fn(SupportedCoins $coinType) => $coinType->value, SupportedCoins::cases()),
             5
         );
-        $this->vendorMachine = new VendorMachine(new CashBox($CashBox));
+        $this->vendorMachine = new VendorMachine(new CashBox($cashBox));
         $this->display = new ConsoleDisplay();
     }
 
@@ -187,11 +187,11 @@ class Console
     private function setCash(): void
     {
         $cash = [];
-        foreach (SupportedCoins::cases() as $coin) {
-            $this->display->showMessage("Enter quantity for {$coin->value} cents: ");
+        foreach (SupportedCoins::cases() as $coinType) {
+            $this->display->showMessage("Enter quantity for {$coinType->value} cents: ");
             $quantity = (int)trim(fgets(STDIN));
             if ($quantity > 0) {
-                $cash[$coin->value] = $quantity;
+                $cash[$coinType->value] = $quantity;
             }
         }
 

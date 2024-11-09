@@ -18,7 +18,7 @@ class VendorMachine
   private int $moneyInserted = 0;
   private int $revenue = 0;
 
-  public function __construct(private CashBox $CashBox = new CashBox(), private array $itemsInventory = [
+  public function __construct(private CashBox $cashBox = new CashBox(), private array $itemsInventory = [
     SupportedItems::JUICE->name => 5,
     SupportedItems::SODA->name => 5,
     SupportedItems::WATER->name => 5,
@@ -26,8 +26,8 @@ class VendorMachine
 
   public function insertCoin(Coin $coin): void
   {
-    $this->moneyInserted += $coin->value;
-    $this->CashBox->addCoin($coin);
+    $this->moneyInserted += $coin->getValueInCents();
+    $this->cashBox->addCoin($coin);
   }
 
   public function getInventory(): array
@@ -49,7 +49,7 @@ class VendorMachine
       throw new NotEnoughMoneyException('Not enough money inserted');
     }
     if ($this->moneyInserted > $item->price) {
-      $change = $this->CashBox->getCoinsForChange($this->moneyInserted, $item->price);
+      $change = $this->cashBox->getCoinsForChange($this->moneyInserted, $item->price);
     }
     $this->itemsInventory[$item->selector]--;
     $this->moneyInserted = 0;
@@ -59,14 +59,14 @@ class VendorMachine
 
   public function cashBack(): array
   {
-    $change = $this->CashBox->getValueInCoins($this->moneyInserted);
+    $change = $this->cashBox->getValueInCoins($this->moneyInserted);
     $this->moneyInserted = 0;
     return $change;
   }
 
   public function getCashAvailable(): array
   {
-    return $this->CashBox->getCashQuantities();
+    return $this->cashBox->getCashQuantities();
   }
 
   public function getRevenue(): int
@@ -87,6 +87,6 @@ class VendorMachine
 
   public function setCashAvailable(CashBox $cashBox): void
   {
-    $this->CashBox = $cashBox;
+    $this->cashBox = $cashBox;
   }
 }

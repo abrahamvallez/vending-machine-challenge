@@ -20,12 +20,6 @@ class CashBoxTest extends TestCase
     ], $cashBox->getCashQuantities());
   }
 
-  public function testCoinsNotCorrectForInitInventory(): void
-  {
-    $this->expectException(InvalidArgumentException::class);
-    new CashBox([1 => 10]);
-  }
-
   public function testAddCoinMakesItAvailableForChange(): void
   {
     $cashBox = new CashBox();
@@ -36,13 +30,6 @@ class CashBoxTest extends TestCase
       SupportedCoins::TEN->value => 0,
       SupportedCoins::NICKEL->value => 0,
     ], $cashBox->getCashQuantities());
-  }
-
-  public function testThrowExceptionWhenAddingUnsupportedCoin(): void
-  {
-    $inventory = new CashBox();
-    $this->expectException(InvalidArgumentException::class);
-    $inventory->addCoin(Coin::fromValueOnCents(1000));
   }
 
   #[DataProvider('getCoinsForChangeDataProvider')]
