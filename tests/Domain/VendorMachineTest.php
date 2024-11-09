@@ -160,4 +160,65 @@ class VendorMachineTest extends TestCase
     $change = $this->vendorMachine->cashBack();
     $this->assertEquals(125, Coin::coinsValue($change));
   }
+
+  public function testGetChangeReturnsEmptyArrayWhenNoChangeAvailable(): void
+  {
+    $change = $this->vendorMachine->getChangeValue();
+    $this->assertEquals([100 => 0, 25 => 0, 10 => 0, 5 => 0], $change);
+  }
+
+  public function testGetChangeReturnsCoinsAvailableForChange(): void
+  {
+    $this->insertCoinsToVendorMachine([Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()]);
+    $change = $this->vendorMachine->getChangeValue();
+    $this->assertEquals([100 => 1, 25 => 1, 10 => 1, 5 => 1], $change);
+  }
+
+  public function testGetRevenueReturnsZeroWhenNoSales(): void
+  {
+    $revenue = $this->vendorMachine->getRevenue();
+    $this->assertEquals(0, $revenue);
+  }
+
+  public function testGetRevenueWhenSales(): void
+  {
+    $this->insertCoinsToVendorMachine([Coin::oneEuro()]);
+    $this->vendorMachine->buy(new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value));
+    $this->insertCoinsToVendorMachine([Coin::oneEuro(), Coin::quarter(), Coin::quarter()]);
+    $this->vendorMachine->buy(new Item(SupportedItems::SODA->name, SupportedItems::SODA->value));
+    $revenue = $this->vendorMachine->getRevenue();
+    $this->assertEquals(SupportedItems::SODA->value + SupportedItems::JUICE->value, $revenue);
+  }
+
+  public function testRevenueIsIncreasedOnlyWithItemPrice(): void
+  {
+    $this->insertCoinsToVendorMachine([Coin::oneEuro(), Coin::quarter()]);
+    $this->vendorMachine->buy(new Item(SupportedItems::JUICE->name, SupportedItems::JUICE->value));
+    $revenue = $this->vendorMachine->getRevenue();
+    $this->assertEquals(SupportedItems::JUICE->value, $revenue);
+  }
+
+  public function testSetItemQuantity(): void
+  {
+    $this->vendorMachine->setItemQuantity(SupportedItems::JUICE->name, 10);
+    $this->assertEquals(10, $this->vendorMachine->getInventory()[SupportedItems::JUICE->name]);
+  }
+
+  public function testSetItemQuantityThrowsExceptionWhenItemIsNotSupported(): void
+  {
+    $this->expectException(InvalidArgumentException::class);
+    $this->vendorMachine->setItemQuantity('not supported item', 10);
+  }
+
+  public function testSetItemQuantityThrowsExceptionWhenQuantityIsNegative(): void
+  {
+    $this->expectException(InvalidArgumentException::class);
+    $this->vendorMachine->setItemQuantity(SupportedItems::JUICE->name, -1);
+  }
+
+  public function testSetChangeSwitchesCoinInventory(): void
+  {
+    $this->vendorMachine->setChange(new CoinInventory([100 => 1, 25 => 1, 10 => 1, 5 => 1]));
+    $this->assertEquals([100 => 1, 25 => 1, 10 => 1, 5 => 1], $this->vendorMachine->getChangeValue());
+  }
 }

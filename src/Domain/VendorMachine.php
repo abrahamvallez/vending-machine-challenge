@@ -13,6 +13,7 @@ use App\SupportedItems;
 class VendorMachine
 {
   private int $moneyInserted = 0;
+  private int $revenue = 0;
 
   public function __construct(private CoinInventory $coinInventory = new CoinInventory(), private array $itemsInventory = [
     SupportedItems::JUICE->name => 5,
@@ -49,6 +50,7 @@ class VendorMachine
     }
     $this->itemsInventory[$item->name]--;
     $this->moneyInserted = 0;
+    $this->revenue += $item->value;
     return new Sale($change, $item);
   }
 
@@ -57,5 +59,31 @@ class VendorMachine
     $change = $this->coinInventory->getValueInCoins($this->moneyInserted);
     $this->moneyInserted = 0;
     return $change;
+  }
+
+  public function getChangeValue(): array
+  {
+    return $this->coinInventory->getQuantities();
+  }
+
+  public function getRevenue(): int
+  {
+    return $this->revenue;
+  }
+
+  public function setItemQuantity(string $itemName, int $quantity): void
+  {
+    if (!SupportedItems::isCorrectItemName($itemName)) {
+      throw new InvalidArgumentException('Item not supported: ' . $itemName);
+    }
+    if ($quantity < 0) {
+      throw new InvalidArgumentException('Quantity cannot be negative');
+    }
+    $this->itemsInventory[$itemName] = $quantity;
+  }
+
+  public function setChange(CoinInventory $coinInventory): void
+  {
+    $this->coinInventory = $coinInventory;
   }
 }
