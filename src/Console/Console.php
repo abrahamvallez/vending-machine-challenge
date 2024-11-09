@@ -142,8 +142,8 @@ class Console
 
     private function buyItem(SupportedItems $item): void
     {
-        $sale = $this->vendorMachine->buy(new Item($item->name, $item->value));
-        $this->display->showPurchaseSuccess($sale->item->name, $sale->change);
+        $sale = $this->vendorMachine->buy(new Item($item->selector, $item->price));
+        $this->display->showPurchaseSuccess($sale->item->selector, $sale->change);
     }
 
     private function showItems(): void

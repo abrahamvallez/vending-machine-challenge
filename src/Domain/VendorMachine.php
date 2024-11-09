@@ -37,23 +37,23 @@ class VendorMachine
 
   public function buy(Item $item): Sale
   {
-    if (!Item::isSupportedItem($item->name)) {
-      throw new InvalidArgumentException('Item not supported: ' . $item->name);
+    if (!Item::isSupportedItem($item->selector)) {
+      throw new InvalidArgumentException('Item not supported: ' . $item->selector);
     }
 
     $change = [];
-    if ($this->itemsInventory[$item->name] === 0) {
+    if ($this->itemsInventory[$item->selector] === 0) {
       throw new NotEnoughInventoryException('Not enough inventory');
     }
-    if ($this->moneyInserted < $item->value) {
+    if ($this->moneyInserted < $item->price) {
       throw new NotEnoughMoneyException('Not enough money inserted');
     }
-    if ($this->moneyInserted > $item->value) {
-      $change = $this->coinInventory->getCoinsForChange($this->moneyInserted, $item->value);
+    if ($this->moneyInserted > $item->price) {
+      $change = $this->coinInventory->getCoinsForChange($this->moneyInserted, $item->price);
     }
-    $this->itemsInventory[$item->name]--;
+    $this->itemsInventory[$item->selector]--;
     $this->moneyInserted = 0;
-    $this->revenue += $item->value;
+    $this->revenue += $item->price;
     return new Sale($change, $item);
   }
 
@@ -74,15 +74,15 @@ class VendorMachine
     return $this->revenue;
   }
 
-  public function setItemQuantity(string $itemName, int $quantity): void
+  public function setItemQuantity(string $itemSelector, int $quantity): void
   {
-    if (!Item::isSupportedItem($itemName)) {
-      throw new InvalidArgumentException('Item not supported: ' . $itemName);
+    if (!Item::isSupportedItem($itemSelector)) {
+      throw new InvalidArgumentException('Item not supported: ' . $itemSelector);
     }
     if ($quantity < 0) {
       throw new InvalidArgumentException('Quantity cannot be negative');
     }
-    $this->itemsInventory[$itemName] = $quantity;
+    $this->itemsInventory[$itemSelector] = $quantity;
   }
 
   public function setChange(CoinInventory $coinInventory): void

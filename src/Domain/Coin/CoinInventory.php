@@ -14,13 +14,8 @@ class CoinInventory
 
   public function __construct(array $coinInventory = [])
   {
-    $this->quantities = array_fill_keys(array_map(fn($supportedCoin) => $supportedCoin->value, SupportedCoins::cases()), 0);
-    foreach ($coinInventory as $coinValue => $quantity) {
-      if (!array_key_exists($coinValue, $this->quantities)) {
-        throw new InvalidArgumentException('Coin not supported: ' . $coinValue);
-      }
-      $this->quantities[$coinValue] = $quantity;
-    }
+    $this->setQuantitiesTo0();
+    $this->setQuantitiesFrom($coinInventory);
   }
 
   public function getQuantities(): array
@@ -46,6 +41,28 @@ class CoinInventory
   public function getValueInCoins(int $value): array
   {
     return $this->calculateChange($value);
+  }
+
+  private function setQuantitiesTo0(): void
+  {
+    $this->quantities = array_fill_keys(
+      array_map(
+        fn($supportedCoin) => $supportedCoin->value,
+        SupportedCoins::cases()
+      ),
+      0
+    );
+  }
+
+  private function setQuantitiesFrom(array $coinInventory): void
+  {
+    foreach ($coinInventory as $coinValue => $quantity) {
+      $coin = Coin::fromValueOnCents($coinValue);
+      if (!SupportedCoins::isSupported($coin)) {
+        throw new InvalidArgumentException('Coin not supported: ' . $coinValue);
+      }
+      $this->quantities[$coin->value] = $quantity;
+    }
   }
 
   private function calculateChange(int $value): array

@@ -4,10 +4,10 @@ namespace App\Domain\Item;
 
 class Item
 {
-  public function __construct(readonly string $name, readonly int $value) {}
+  public function __construct(readonly string $selector, readonly int $price) {}
 
-  public static function isSupportedItem(string $name): bool
+  public static function isSupportedItem(string $selector): bool
   {
-    return SupportedItems::isCorrectItemName($name);
+    return SupportedItems::isCorrectItemName($selector);
   }
 }
