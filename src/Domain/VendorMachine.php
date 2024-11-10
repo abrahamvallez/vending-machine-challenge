@@ -75,8 +75,6 @@ class VendorMachine
 
   public function setItemQuantity(SupportedItems $itemType, int $quantity): void
   {
-    print_r($itemType);
-    print_r($quantity);
     $itemSelector = $itemType->value;
     if ($quantity < 0) {
       throw new InvalidArgumentException('Quantity cannot be negative');
