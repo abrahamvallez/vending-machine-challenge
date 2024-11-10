@@ -28,6 +28,14 @@ class CashBox
         $this->cashQuantities[$coin->getValueInCents()]++;
     }
 
+    /**
+     * Calculates and provides change for a purchase
+     * 
+     * @param int $moneyInserted Total money inserted in cents
+     * @param int $itemPrice Price of the item in cents
+     * @return Coin[] Array of coins representing the change
+     * @throws NotEnoughChangeException When exact change cannot be provided
+     */
     public function getCoinsForChange(int $moneyInserted, int $itemPrice): array
     {
         $remainingChange = $moneyInserted - $itemPrice;
@@ -37,6 +45,13 @@ class CashBox
         return $this->calculateChange($remainingChange);
     }
 
+    /**
+     * Converts a value into an array of coins
+     * 
+     * @param int $value Amount to convert in cents
+     * @return Coin[] Array of coins totaling the requested value
+     * @throws NotEnoughChangeException When the value cannot be represented with available coins
+     */
     public function getValueInCoins(int $value): array
     {
         return $this->calculateChange($value);

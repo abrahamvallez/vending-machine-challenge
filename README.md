@@ -203,4 +203,30 @@ Used PHP 8.1 Enums to define supported domain values (coins, items, actions) ins
    - Less type safety
    - Too much complexity for this challenge
 
+### ADR 5: Code Documentation Strategy
+**Context:**
+- Need to establish a consistent approach to code documentation
+- Some methods are self-documenting through type hints and naming
+- Other methods require additional context or explanation
+- PHP 8.2 provides robust type system
+
+**Decision:**
+Implemented a selective PHPDoc documentation strategy:
+1. Document only methods that:
+   - Have complex return types (arrays with specific structures)
+   - Can throw exceptions
+   - Have non-obvious side effects
+   - Require additional context
+2. Rely on PHP's type system and descriptive naming for self-documenting code
+
+**Consequences:**
+* Positive:
+  - Reduced documentation maintenance overhead
+  - Clear focus on what needs explanation
+  - Clean, readable codebase
+  - Better IDE support for complex types
+* Negative:
+  - Requires good judgment about what needs documentation
+  - May need to add documentation later as code evolves
+
 These ADRs document key architectural decisions made during development, their context, and consequences.
