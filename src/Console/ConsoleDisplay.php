@@ -27,7 +27,7 @@ class ConsoleDisplay
   {
     echo sprintf(
       "Here's your change: %s\n",
-      implode(', ', array_map(fn($coin) => $coin->getValueInCents(), $coins))
+      implode(', ', array_map(fn($coin) => $coin->getValueInCents() / 100, $coins))
     );
   }
 
@@ -66,8 +66,8 @@ class ConsoleDisplay
   {
     echo "\nMachine Status:\n";
     echo "Inventory:\n";
-    foreach ($inventory as $item => $quantity) {
-      echo sprintf("  %s: %d\n", $item, $quantity);
+    foreach ($inventory as $item) {
+      echo sprintf("  %s: %d\n", $item['item']->selector, $item['quantity']);
     }
   }
 
@@ -89,7 +89,7 @@ class ConsoleDisplay
 
   public function showRevenue(int $revenue): void
   {
-    echo sprintf("\nTotal Revenue: $%0.2f\n", $revenue / 100);
+    echo sprintf("\nTotal Revenue: %.2f €\n", $revenue / 100);
   }
 
   public function showMessage(string $message): void

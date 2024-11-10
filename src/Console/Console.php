@@ -53,9 +53,9 @@ class Console
                 Actions::QUARTER->value => $this->vendorMachine->insertCoin(Coin::quarter()),
                 Actions::TEN_CENTS->value => $this->vendorMachine->insertCoin(Coin::ten()),
                 Actions::NICKEL->value => $this->vendorMachine->insertCoin(Coin::nickel()),
-                SupportedItems::JUICE->name => $this->buyItem(SupportedItems::JUICE),
-                SupportedItems::SODA->name => $this->buyItem(SupportedItems::SODA),
-                SupportedItems::WATER->name => $this->buyItem(SupportedItems::WATER),
+                SupportedItems::JUICE->value => $this->buyItem(SupportedItems::JUICE),
+                SupportedItems::SODA->value => $this->buyItem(SupportedItems::SODA),
+                SupportedItems::WATER->value => $this->buyItem(SupportedItems::WATER),
                 default => $this->display->showError("Command not supported. Type 'help' to see available commands.")
             };
         } catch (\Throwable $th) {
@@ -114,16 +114,20 @@ class Console
 
     private function showHelp(): void
     {
-        $commands = array_merge(
-            array_combine(
-                array_column(Actions::cases(), 'value'),
-                array_map(fn($command) => $command->getDescription(), Actions::cases())
-            ),
-            array_combine(
-                array_column(SupportedItems::cases(), 'name'),
-                array_map(fn($item) => "Buy a {$item->name}", SupportedItems::cases())
-            )
+        // Get action commands
+        $actionCommands = array_combine(
+            array_column(Actions::cases(), 'value'),
+            array_map(fn($command) => $command->getDescription(), Actions::cases())
         );
+
+        // Get item purchase commands
+        $itemCommands = array_combine(
+            array_column(SupportedItems::cases(), 'value'),
+            array_map(fn($item) => "Buy a {$item->value}", SupportedItems::cases())
+        );
+
+        // Merge both command sets
+        $commands = array_merge($actionCommands, $itemCommands);
 
         $this->display->showHelp($commands);
     }
@@ -140,9 +144,9 @@ class Console
         $this->display->showChange($change);
     }
 
-    private function buyItem(SupportedItems $item): void
+    private function buyItem(SupportedItems $itemType): void
     {
-        $sale = $this->vendorMachine->buy(new Item($item->selector, $item->price));
+        $sale = $this->vendorMachine->buy($itemType);
         $this->display->showPurchaseSuccess($sale->item->selector, $sale->change);
     }
 
@@ -166,19 +170,18 @@ class Console
 
     private function setItem(): void
     {
-        $this->display->showServiceItemName("Enter item name (WATER/SODA/JUICE/...): ");
+        $this->display->showServiceItemName("Enter item name (" . implode('/', SupportedItems::getValues()) . "): ");
         $itemName = trim(fgets(STDIN));
 
-        if (!Item::isSupportedItem($itemName)) {
+        if (SupportedItems::tryFrom($itemName) === null) {
             throw new \InvalidArgumentException('Invalid item name');
         }
 
-        $this->display->showServiceItemQuantity("Enter quantity: ");
-        $quantity = (int)trim(fgets(STDIN));
-
         try {
-            $this->vendorMachine->setItemQuantity($itemName, $quantity);
-            $this->display->showMessage("Item quantity updated successfully\n");
+            $this->display->showServiceItemQuantity("Enter quantity: ");
+            $quantity = (int)trim(fgets(STDIN));
+            $this->vendorMachine->setItemQuantity(SupportedItems::from($itemName), $quantity);
+            $this->display->showMessage("Items inventory updated successfully\n");
         } catch (\Throwable $th) {
             $this->display->showError($th->getMessage());
         }
@@ -190,9 +193,10 @@ class Console
         foreach (SupportedCoins::cases() as $coinType) {
             $this->display->showMessage("Enter quantity for {$coinType->value} cents: ");
             $quantity = (int)trim(fgets(STDIN));
-            if ($quantity > 0) {
-                $cash[$coinType->value] = $quantity;
+            if ($quantity < 0) {
+                throw new \InvalidArgumentException('Quantity cannot be negative');
             }
+            $cash[$coinType->value] = $quantity;
         }
 
         try {

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Item;
 
-enum SupportedItems: int
+enum SupportedItems: string
 {
-  case JUICE = 100;
-  case SODA = 150;
-  case WATER = 65;
+  case JUICE = 'juice';
+  case SODA = 'soda';
+  case WATER = 'water';
 
-  public static function isCorrectItemName(string $itemName): bool
+  public static function getValues(): array
   {
-    return in_array($itemName, array_map(fn($item) => $item->name, self::cases()), true);
+    return array_map(fn($item) => $item->value, self::cases());
   }
 }

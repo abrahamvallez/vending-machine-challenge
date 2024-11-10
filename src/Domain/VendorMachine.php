@@ -19,9 +19,9 @@ class VendorMachine
   private int $revenue = 0;
 
   public function __construct(private CashBox $cashBox = new CashBox(), private array $itemsInventory = [
-    SupportedItems::JUICE->name => 5,
-    SupportedItems::SODA->name => 5,
-    SupportedItems::WATER->name => 5,
+    SupportedItems::JUICE->value => ['item' => new Item(SupportedItems::JUICE, 100), 'quantity' => 5],
+    SupportedItems::SODA->value => ['item' => new Item(SupportedItems::SODA, 150), 'quantity' => 5],
+    SupportedItems::WATER->value => ['item' => new Item(SupportedItems::WATER, 65), 'quantity' => 5],
   ]) {}
 
   public function insertCoin(Coin $coin): void
@@ -35,26 +35,25 @@ class VendorMachine
     return $this->itemsInventory;
   }
 
-  public function buy(Item $item): Sale
+  public function buy(SupportedItems $itemType): Sale
   {
-    if (!Item::isSupportedItem($item->selector)) {
-      throw new InvalidArgumentException('Item not supported: ' . $item->selector);
-    }
-
     $change = [];
-    if ($this->itemsInventory[$item->selector] === 0) {
+    $itemSelector = $itemType->value;
+    $itemToSell = $this->itemsInventory[$itemSelector]['item'];
+    if ($this->itemsInventory[$itemSelector]['quantity'] === 0) {
       throw new NotEnoughInventoryException('Not enough inventory');
     }
-    if ($this->moneyInserted < $item->price) {
+
+    if ($this->moneyInserted < $itemToSell->price) {
       throw new NotEnoughMoneyException('Not enough money inserted');
     }
-    if ($this->moneyInserted > $item->price) {
-      $change = $this->cashBox->getCoinsForChange($this->moneyInserted, $item->price);
+    if ($this->moneyInserted > $itemToSell->price) {
+      $change = $this->cashBox->getCoinsForChange($this->moneyInserted, $itemToSell->price);
     }
-    $this->itemsInventory[$item->selector]--;
+    $this->itemsInventory[$itemSelector]['quantity']--;
     $this->moneyInserted = 0;
-    $this->revenue += $item->price;
-    return new Sale($change, $item);
+    $this->revenue += $itemToSell->price;
+    return new Sale($change, $itemToSell);
   }
 
   public function cashBack(): array
@@ -74,15 +73,15 @@ class VendorMachine
     return $this->revenue;
   }
 
-  public function setItemQuantity(string $itemSelector, int $quantity): void
+  public function setItemQuantity(SupportedItems $itemType, int $quantity): void
   {
-    if (!Item::isSupportedItem($itemSelector)) {
-      throw new InvalidArgumentException('Item not supported: ' . $itemSelector);
-    }
+    print_r($itemType);
+    print_r($quantity);
+    $itemSelector = $itemType->value;
     if ($quantity < 0) {
       throw new InvalidArgumentException('Quantity cannot be negative');
     }
-    $this->itemsInventory[$itemSelector] = $quantity;
+    $this->itemsInventory[$itemSelector]['quantity'] = $quantity;
   }
 
   public function setCashAvailable(CashBox $cashBox): void
