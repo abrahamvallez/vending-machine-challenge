@@ -64,7 +64,7 @@ The development of this project was tracked using a GitHub Project board. You ca
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/abrahamvallez/vending-machine-challenge
 ```
 
 2. Install dependencies:
