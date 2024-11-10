@@ -8,6 +8,7 @@ use App\Domain\{VendorMachine, Sale};
 use App\Domain\Exceptions\{NotEnoughMoneyException, NotEnoughInventoryException, NotEnoughChangeException};
 use App\Domain\Item\{SupportedItems, Item};
 use InvalidArgumentException;
+use App\Domain\Item\ItemInventory;
 
 class VendorMachineTest extends TestCase
 {
@@ -15,11 +16,11 @@ class VendorMachineTest extends TestCase
 
   protected function setUp(): void
   {
-    $this->vendorMachine = new VendorMachine(new CashBox(), [
-      SupportedItems::JUICE->value => ['item' => new Item(SupportedItems::JUICE, 100), 'quantity' => 1],
-      SupportedItems::SODA->value => ['item' => new Item(SupportedItems::SODA, 150), 'quantity' => 1],
-      SupportedItems::WATER->value => ['item' => new Item(SupportedItems::WATER, 65), 'quantity' => 1],
-    ]);
+    $itemInventory = new ItemInventory();
+    $itemInventory->setItem(new Item(SupportedItems::JUICE, 100), 1);
+    $itemInventory->setItem(new Item(SupportedItems::SODA, 150), 1);
+    $itemInventory->setItem(new Item(SupportedItems::WATER, 65), 1);
+    $this->vendorMachine = new VendorMachine(new CashBox(), $itemInventory);
   }
 
   private function insertCoinsToVendorMachine(array $coins): void
@@ -51,12 +52,11 @@ class VendorMachineTest extends TestCase
   #[Group('buy_items')]
   public function testItemIsRemovedFromInventaryWhenIsSold(): void
   {
-    $itemInventory = $this->vendorMachine->getInventory();
-    $this->assertEquals(1, $itemInventory[SupportedItems::JUICE->value]['quantity']);
+    $inventory = $this->vendorMachine->getInventory();
+    $this->assertEquals(1, $inventory->getItemQuantity(SupportedItems::JUICE));
     $this->vendorMachine->insertCoin(Coin::oneEuro());
     $this->vendorMachine->buy(SupportedItems::JUICE);
-    $itemInventory = $this->vendorMachine->getInventory();
-    $this->assertEquals(0, $itemInventory[SupportedItems::JUICE->value]['quantity']);
+    $this->assertEquals(0, $inventory->getItemQuantity(SupportedItems::JUICE));
   }
 
   #[Group('buy_items')]
@@ -149,13 +149,13 @@ class VendorMachineTest extends TestCase
     $this->assertEquals(125, Coin::coinsValue($change));
   }
 
-  public function testGetChangeReturnsEmptyArrayWhenNoChangeAvailable(): void
+  public function testGetCashAvailableReturnsEmptyArrayWhenNoChangeAvailable(): void
   {
     $cashAvailable = $this->vendorMachine->getCashAvailable();
     $this->assertEquals([100 => 0, 25 => 0, 10 => 0, 5 => 0], $cashAvailable);
   }
 
-  public function testGetChangeReturnsCoinsAvailableForChange(): void
+  public function testGetCashAvailableReturnsCoinsAvailableForChange(): void
   {
     $this->insertCoinsToVendorMachine([Coin::oneEuro(), Coin::quarter(), Coin::ten(), Coin::nickel()]);
     $cashAvailable = $this->vendorMachine->getCashAvailable();
@@ -186,17 +186,17 @@ class VendorMachineTest extends TestCase
     $this->assertEquals(100, $revenue);
   }
 
-  public function testSetItemQuantity(): void
+  public function testUpdateItemQuantity(): void
   {
-    $this->vendorMachine->setItemQuantity(SupportedItems::JUICE, 10);
+    $this->vendorMachine->updateItemQuantity(SupportedItems::JUICE, 10);
     $inventory = $this->vendorMachine->getInventory();
-    $this->assertEquals(10, $inventory[SupportedItems::JUICE->value]['quantity']);
+    $this->assertEquals(10, $inventory->getItemQuantity(SupportedItems::JUICE));
   }
 
-  public function testSetItemQuantityThrowsExceptionWhenQuantityIsNegative(): void
+  public function testUpdateItemQuantityThrowsExceptionWhenQuantityIsNegative(): void
   {
     $this->expectException(InvalidArgumentException::class);
-    $this->vendorMachine->setItemQuantity(SupportedItems::JUICE, -1);
+    $this->vendorMachine->updateItemQuantity(SupportedItems::JUICE, -1);
   }
 
   public function testSetChangeSwitchesCashBox(): void

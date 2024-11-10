@@ -7,6 +7,7 @@ use App\Console\ConsoleDisplay;
 use App\Domain\VendorMachine;
 use App\Domain\Coin\{CashBox, Coin, SupportedCoins};
 use App\Domain\Item\{Item, SupportedItems};
+use App\Domain\Item\ItemInventory;
 
 class Console
 {
@@ -21,7 +22,11 @@ class Console
             array_map(fn(SupportedCoins $coinType) => $coinType->value, SupportedCoins::cases()),
             5
         );
-        $this->vendorMachine = new VendorMachine(new CashBox($cashBox));
+        $itemInventory = new ItemInventory();
+        $itemInventory->setItem(new Item(SupportedItems::JUICE, 100), 10);
+        $itemInventory->setItem(new Item(SupportedItems::SODA, 150), 10);
+        $itemInventory->setItem(new Item(SupportedItems::WATER, 100), 10);
+        $this->vendorMachine = new VendorMachine(new CashBox($cashBox), $itemInventory);
         $this->display = new ConsoleDisplay();
     }
 
@@ -114,21 +119,15 @@ class Console
 
     private function showHelp(): void
     {
-        // Get action commands
-        $actionCommands = array_combine(
-            array_column(Actions::cases(), 'value'),
-            array_map(fn($command) => $command->getDescription(), Actions::cases())
-        );
-
-        // Get item purchase commands
-        $itemCommands = array_combine(
-            array_column(SupportedItems::cases(), 'value'),
-            array_map(fn($item) => "Buy a {$item->value}", SupportedItems::cases())
-        );
-
-        // Merge both command sets
-        $commands = array_merge($actionCommands, $itemCommands);
-
+        $actionCommands = [];
+        foreach (Actions::cases() as $action) {
+            $actionCommands[$action->value] = $action->getDescription();
+        }
+        $itemCommands = [];
+        foreach (SupportedItems::cases() as $item) {
+            $itemCommands[$item->value] = "Buy a {$item->value}";
+        }
+        $commands = $actionCommands + $itemCommands;
         $this->display->showHelp($commands);
     }
 
@@ -152,8 +151,8 @@ class Console
 
     private function showItems(): void
     {
-        $items = $this->vendorMachine->getInventory();
-        $this->display->showItems($items);
+        $inventory = $this->vendorMachine->getInventory();
+        $this->display->showItems($inventory);
     }
 
     private function showCash(): void
@@ -180,7 +179,7 @@ class Console
         try {
             $this->display->showServiceItemQuantity("Enter quantity: ");
             $quantity = (int)trim(fgets(STDIN));
-            $this->vendorMachine->setItemQuantity(SupportedItems::from($itemName), $quantity);
+            $this->vendorMachine->updateItemQuantity(SupportedItems::from($itemName), $quantity);
             $this->display->showMessage("Items inventory updated successfully\n");
         } catch (\Throwable $th) {
             $this->display->showError($th->getMessage());

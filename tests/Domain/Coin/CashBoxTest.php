@@ -55,7 +55,7 @@ class CashBoxTest extends TestCase
     ];
   }
 
-  public function testCoinsNotCorrectForChange(): void
+  public function testCashNotCorrectForChange(): void
   {
     $inventory = new CashBox([
       SupportedCoins::ONE_EURO->value => 1,
@@ -67,7 +67,7 @@ class CashBoxTest extends TestCase
     $inventory->getCoinsForChange(100, 10);
   }
 
-  public function testNotEnoughMoneyForChange(): void
+  public function testCashNotEnoughForChange(): void
   {
     $inventory = new CashBox([
       SupportedCoins::ONE_EURO->value => 0,

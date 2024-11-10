@@ -2,6 +2,8 @@
 
 namespace App\Console;
 
+use App\Domain\Item\ItemInventory;
+
 class ConsoleDisplay
 {
   public function showWelcome(): void
@@ -62,20 +64,20 @@ class ConsoleDisplay
     }
   }
 
-  public function showMachineStatus(array $inventory): void
+  public function showMachineStatus(ItemInventory $inventory): void
   {
     echo "\nMachine Status:\n";
     echo "Inventory:\n";
     foreach ($inventory as $item) {
-      echo sprintf("  %s: %d\n", $item['item']->selector, $item['quantity']);
+      echo sprintf("  %s: %d\n", $item->item->selector, $item->quantity);
     }
   }
 
-  public function showItems(array $items): void
+  public function showItems(ItemInventory $inventory): void
   {
     echo "\nCurrent Items Inventory:\n";
-    foreach ($items as $item => $quantity) {
-      echo sprintf("  %-10s : %d\n", $item, $quantity);
+    foreach ($inventory as $item) {
+      echo sprintf("  %-10s : %d\n", $item->item->selector, $item->quantity);
     }
   }
 

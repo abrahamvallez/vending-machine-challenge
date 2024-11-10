@@ -4,12 +4,14 @@ namespace Tests\Domain\Item;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Ignore;
+use App\Domain\Item\Item;
+use App\Domain\Item\SupportedItems;
 
-#[Ignore('Tests not implemented yet')]
 class ItemTest extends TestCase
 {
-  public function test_placeholder(): void
+  public function testItemCreatedSetSelector(): void
   {
-    $this->assertTrue(true);
+    $item = new Item(SupportedItems::JUICE, 100);
+    $this->assertEquals(SupportedItems::JUICE->value, $item->selector);
   }
 }
