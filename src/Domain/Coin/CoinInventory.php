@@ -12,7 +12,7 @@ class CoinInventory
 
     /**
      * Initializes quantities for all supported coin types
-     * 
+     *
      * @param array<int, int> $coinInventory Initial quantities for each coin type
      */
     public function __construct(array $coinInventory = [])
@@ -23,7 +23,7 @@ class CoinInventory
 
     /**
      * Gets current quantities of all coin types
-     * 
+     *
      * @return array<int, int> Map of coin values to their quantities
      */
     public function getQuantities(): array
@@ -54,7 +54,7 @@ class CoinInventory
     {
         $this->quantities = array_fill_keys(
             array_map(
-                fn($coinType) => $coinType->value,
+                fn ($coinType) => $coinType->value,
                 SupportedCoins::cases()
             ),
             0
