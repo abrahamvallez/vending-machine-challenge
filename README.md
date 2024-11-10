@@ -2,20 +2,59 @@
 
 A command-line vending machine simulator built with PHP. The application allows users to insert coins, buy items, and includes a service mode for maintenance operations.
 
-## Features
+### Core Functionality
+1. **Money Handling**
+   - Accepts multiple coin denominations (€1, €0.25, €0.10, €0.05)
+   - Provides accurate change calculation
+   - Handles insufficient change scenarios
 
-- Insert different coin denominations (€1, €0.25, €0.10, €0.05)
-- Buy items (juice, soda, water)
-- Get change back
-- Service mode for maintenance
-- Inventory management
-- Cash management
+2. **Inventory Management**
+   - Real-time stock tracking
+   - Product availability checks
+
+3. **Service Mode**
+   - Protected maintenance interface
+   - Cash management
+   - Inventory adjustment
+   - Revenue tracking
+
+## Available Commands
+
+### Customer Mode
+| Command    | Description                |
+|------------|----------------------------|
+| help       | Shows available commands   |
+| 1          | Insert one euro           |
+| 0.25       | Insert 25 euro cents      |
+| 0.10       | Insert 10 euro cents      |
+| 0.05       | Insert 5 euro cents       |
+| cash-back  | Get money back            |
+| juice      | Buy a juice (€1.00)       |
+| soda       | Buy a soda (€1.50)        |
+| water      | Buy a water (€0.65)       |
+
+### Service Mode
+| Command    | Description                |
+|------------|----------------------------|
+| status     | Show machine status        |
+| items      | Show items inventory       |
+| cash       | Show cash inventory        |
+| revenue    | Show total revenue         |
+| set-item   | Set item quantity         |
+| set-cash   | Set coin quantity         |
 
 ## Requirements
 
 - PHP 8.2 or higher
 - Composer
 - Docker (optional)
+
+## Technical Stack
+- PHP 8.2
+- PHPUnit 11.4 for testing
+- PHP_CodeSniffer & PHP-CS-Fixer for code quality
+- Docker for containerization
+- Composer for dependency management
 
 ## Installation
 
@@ -47,38 +86,7 @@ docker-compose exec php php src/App.php
 
 ```bash
 php src/App.php
-```
-
-## Available Commands
-
-### Regular Mode
-
-| Command    | Description                |
-|------------|----------------------------|
-| help       | Shows available commands   |
-| exit       | Exit application          |
-| cash-back  | Get money back            |
-| service    | Enter service mode        |
-| 1          | Insert one euro           |
-| 0.25       | Insert 25 euro cents      |
-| 0.10       | Insert 10 euro cents      |
-| 0.05       | Insert 5 euro cents       |
-| juice      | Buy a juice (€1.00)       |
-| soda       | Buy a soda (€1.50)        |
-| water      | Buy a water (€0.65)       |
-
-### Service Mode
-
-| Command    | Description                |
-|------------|----------------------------|
-| help       | Show service mode commands |
-| status     | Show machine status        |
-| items      | Show items inventory       |
-| cash       | Show cash inventory        |
-| revenue    | Show total revenue         |
-| set-item   | Set item quantity         |
-| set-cash   | Set coin quantity         |
-| exit       | Exit service mode         |
+```       
 
 ## Development
 
@@ -109,3 +117,90 @@ composer lint:fix
     - `Item/` - Item-related Domain
     - `Exceptions/` - Domain exceptions
 - `tests/` - Test files
+
+## Architecture Decision Records (ADRs)
+
+### ADR 1: UI Layer Implementation
+**Context:**
+The Console class serves as both UI layer and partially as application layer.
+
+**Decision:**
+We decided to combine UI and application layer logic in the Console class rather than creating a separate application layer.
+
+**Consequences:**
+* Positive:
+  - Reduced complexity by avoiding unnecessary indirection
+  - Simpler codebase for a console application
+  - Direct mapping between user commands and domain actions
+* Negative:
+  - Less separation of concerns
+  - Potential difficulty if we need to add new UI interfaces
+
+### ADR 2: Domain Object Separation
+**Context:**
+ItemInventory and CashBox functionality was initially part of VendorMachine class.
+
+**Decision:**
+Extracted ItemInventory and CashBox as separate domain objects to handle their specific responsibilities.
+
+**Consequences:**
+* Positive:
+  - Better adherence to Single Responsibility Principle
+  - Reduced complexity in VendorMachine class
+  - Easier to test and maintain each component
+* Negative:
+  - More classes to manage
+
+### ADR 3: Testing Strategy
+**Context:**
+Need to establish a comprehensive testing approach for the domain model.
+
+**Decision:**
+Implemented a two-level testing strategy (see [Martin Fowler's article on Unit Testing](https://martinfowler.com/bliki/UnitTest.html)): 
+1. Sociable tests for VendorMachine aggregate ()
+2. Solitary unit tests for individual domain objects
+
+**Consequences:**
+* Positive:
+  - High test coverage of business logic
+  - Clear test organization
+  - Easy to identify failing behaviors
+* Negative:
+  - UI layer currently untested (Next iterations)
+  - Some test duplication between levels
+  - Longer test execution time
+
+### ADR 4: Domain Model Configuration
+**Context:**
+- Need to manage supported coins, items, and actions in a maintainable way
+- Prior to PHP 8.1, similar functionality was typically achieved using class constants or static arrays
+- PHP 8.1 introduced native enum support, providing a more robust way to handle fixed sets of values
+
+**Decision:**
+Used PHP 8.1 Enums to define supported domain values (coins, items, actions) instead of traditional approaches like:
+
+**Consequences:**
+* Positive:
+  - Type-safe domain values
+  - Native PHP support for enumerated types
+  - Built-in methods like `cases()` and `from()`
+  - IDE autocompletion support
+  - Prevents invalid states and magic values
+  - Self-documenting code
+* Negative:
+  - Higher PHP version requirement (8.1+)
+  - Limited to simple value types
+  - Not suitable for dynamic configurations
+
+**Alternatives Considered:**
+1. Class Constants:
+   - More compatible but less type-safe
+   - No built-in validation
+   - No method support
+
+2. Configuration Files:
+   - More flexible for runtime changes
+   - Less type safety
+   - Too much complexity for this challenge
+
+These ADRs document key architectural decisions made during development, their context, and consequences.
