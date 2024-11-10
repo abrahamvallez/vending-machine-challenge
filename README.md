@@ -49,6 +49,10 @@ A command-line vending machine simulator built with PHP. The application allows 
 - Composer
 - Docker (optional)
 
+## Product Management
+
+The development of this project was tracked using a GitHub Project board. You can view the detailed development progress and feature implementation at [GitHub Project Board](https://github.com/users/abrahamvallez/projects/3).
+
 ## Technical Stack
 - PHP 8.2
 - PHPUnit 11.4 for testing
