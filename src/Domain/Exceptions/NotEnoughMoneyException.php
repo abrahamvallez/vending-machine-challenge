@@ -2,4 +2,6 @@
 
 namespace App\Domain\Exceptions;
 
-class NotEnoughMoneyException extends \Exception {}
+class NotEnoughMoneyException extends \Exception
+{
+}

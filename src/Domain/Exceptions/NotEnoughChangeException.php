@@ -2,4 +2,6 @@
 
 namespace App\Domain\Exceptions;
 
-class NotEnoughChangeException extends \Exception {}
+class NotEnoughChangeException extends \Exception
+{
+}

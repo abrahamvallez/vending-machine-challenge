@@ -3,11 +3,10 @@
 namespace App\Console;
 
 use App\Actions;
-use App\Console\ConsoleDisplay;
-use App\Domain\VendorMachine;
 use App\Domain\Coin\{CashBox, Coin, SupportedCoins};
-use App\Domain\Item\{Item, SupportedItems};
 use App\Domain\Item\ItemInventory;
+use App\Domain\Item\{Item, SupportedItems};
+use App\Domain\VendorMachine;
 
 class Console
 {
@@ -19,7 +18,7 @@ class Console
     public function __construct()
     {
         $cashBox = array_fill_keys(
-            array_map(fn(SupportedCoins $coinType) => $coinType->value, SupportedCoins::cases()),
+            array_map(fn (SupportedCoins $coinType) => $coinType->value, SupportedCoins::cases()),
             5
         );
         $itemInventory = new ItemInventory();
@@ -106,7 +105,7 @@ class Console
             'revenue' => 'Show total revenue',
             'set-item' => 'Set item quantity',
             'set-cash' => 'Set coin quantity',
-            'exit' => 'Exit service mode'
+            'exit' => 'Exit service mode',
         ];
         $this->display->showServiceHelp($commands);
     }
@@ -169,7 +168,7 @@ class Console
 
     private function setItem(): void
     {
-        $this->display->showServiceItemName("Enter item name (" . implode('/', SupportedItems::getValues()) . "): ");
+        $this->display->showServiceItemName('Enter item name (' . implode('/', SupportedItems::getValues()) . '): ');
         $itemName = trim(fgets(STDIN));
 
         if (SupportedItems::tryFrom($itemName) === null) {
@@ -177,7 +176,7 @@ class Console
         }
 
         try {
-            $this->display->showServiceItemQuantity("Enter quantity: ");
+            $this->display->showServiceItemQuantity('Enter quantity: ');
             $quantity = (int)trim(fgets(STDIN));
             $this->vendorMachine->updateItemQuantity(SupportedItems::from($itemName), $quantity);
             $this->display->showMessage("Items inventory updated successfully\n");
